@@ -3,6 +3,7 @@ import WelcomeSection from '@/components/home/WelcomeSection'
 import IntroductionSection from '@/components/home/IntroductionSection'
 import UpcomingEventsSection from '@/components/home/UpcomingEventsSection'
 import LatestNewsSection from '@/components/home/LatestNewsSection'
+import GalleryPreviewSection from '@/components/home/GalleryPreviewSection'
 function Home() {
   return (
     <>
@@ -11,6 +12,7 @@ function Home() {
       <IntroductionSection />
       <UpcomingEventsSection />
       <LatestNewsSection />
+      <GalleryPreviewSection />
     </>
   )
 }
