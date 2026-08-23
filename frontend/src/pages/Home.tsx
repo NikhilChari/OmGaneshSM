@@ -5,6 +5,7 @@ import UpcomingEventsSection from '@/components/home/UpcomingEventsSection'
 import LatestNewsSection from '@/components/home/LatestNewsSection'
 import GalleryPreviewSection from '@/components/home/GalleryPreviewSection'
 import MissionVisionSection from '@/components/home/MissionVisionSection'
+import NewsletterSection from '@/components/home/NewsletterSection'
 function Home() {
   return (
     <>
@@ -15,6 +16,7 @@ function Home() {
       <LatestNewsSection />
       <GalleryPreviewSection />
       <MissionVisionSection />
+      <NewsletterSection />
     </>
   )
 }
