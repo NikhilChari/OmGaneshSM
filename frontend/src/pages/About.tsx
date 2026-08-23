@@ -1,6 +1,7 @@
 import AboutHero from '@/components/about/AboutHero'
 import HistorySection from '@/components/about/HistorySection'
 import MissionVisionSection from '@/components/about/MissionVisionSection'
+import AchievementsSection from '@/components/about/AchievementsSection'
 
 function About() {
   return (
@@ -8,6 +9,7 @@ function About() {
       <AboutHero />
       <HistorySection />
       <MissionVisionSection />
+      <AchievementsSection />
     </>
   )
 }
