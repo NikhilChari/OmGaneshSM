@@ -46,7 +46,7 @@ function ConnectSection() {
 
   <div className="mt-4 flex flex-wrap justify-center gap-3">
     <a
-      href="#"
+      href="https://www.instagram.com/om_ganesh_sanskrutik_mandal/"
       aria-label="Instagram"
       className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white/85 transition-colors hover:border-[#fbbf24]/40 hover:bg-white/10 hover:text-[#fbbf24]"
     >
