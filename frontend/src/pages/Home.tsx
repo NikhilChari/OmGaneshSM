@@ -5,7 +5,8 @@ import UpcomingEventsSection from '@/components/home/UpcomingEventsSection'
 import LatestNewsSection from '@/components/home/LatestNewsSection'
 import GalleryPreviewSection from '@/components/home/GalleryPreviewSection'
 import MissionVisionSection from '@/components/home/MissionVisionSection'
-import NewsletterSection from '@/components/home/NewsletterSection'
+// import NewsletterSection from '@/components/home/NewsletterSection'
+import ConnectSection from '@/components/home/ConnectSection'
 function Home() {
   return (
     <>
@@ -16,7 +17,8 @@ function Home() {
       <LatestNewsSection />
       <GalleryPreviewSection />
       <MissionVisionSection />
-      <NewsletterSection />
+      {/* <NewsletterSection /> */}
+      <ConnectSection />
     </>
   )
 }
