@@ -3,52 +3,95 @@
 
 ---
 
-# Phase 0 — Project Planning
-
-Status: NOT STARTED
-
-Tasks:
-
-- Create GitHub repository.
-- Create project documentation.
-- Finalize PRD.
-- Finalize architecture.
-- Finalize development rules.
-- Finalize development phases.
-- Define visual design.
-
-Deliverables:
-
-PRD.md
-Architecture.md
-Rules.md
-Phases.md
-Design.md
-
 ---
 
+# `phases.md`
+
+This one should be our **living development roadmap**. Keep it updated after every meaningful milestone.
+
+```md
+# Om Ganesh — Development Phases
+
+This document tracks the development progress of the Om Ganesh Sports & Masti platform.
+
+---22august26
+
+# Phase 0 — Planning & Repository Setup
+
+**Status: ✅ Complete**
+
+## Goals
+
+- Understand project requirements.
+- Review repository structure.
+- Establish development workflow.
+- Define project phases.
+- Prepare Git workflow.
+
+## Completed
+
+- [x] Repository reviewed
+- [x] Initial project structure established
+- [x] Development phases defined
+- [x] Git workflow established
+- [x] Frontend development environment prepared
+
+---
+22august26
 # Phase 1 — Frontend Foundation
 
-Status: NOT STARTED
+**Status: ✅ Complete**
 
-Tasks:
+## Goals
 
-- Initialize React + TypeScript + Vite.
-- Configure Tailwind CSS.
-- Configure shadcn/ui.
-- Configure React Router.
-- Create project structure.
-- Create global styles.
-- Create basic layout.
+Establish a clean, maintainable frontend foundation before building the actual website.
 
-Deliverables:
+## Completed
 
-- Working React application.
-- Responsive base layout.
-- Navigation.
-- Footer.
+### Vite / React
 
----
+- [x] Vite project configured
+- [x] React configured
+- [x] TypeScript configured
+- [x] Development server verified
+
+### Styling
+
+- [x] Tailwind CSS v4 installed
+- [x] Tailwind Vite integration configured
+- [x] Global CSS configured
+
+### shadcn/ui
+
+- [x] shadcn/ui initialized
+- [x] Base UI selected
+- [x] Nova preset selected
+- [x] Initial Button component generated
+- [x] `components.json` created
+- [x] `src/lib/utils.ts` created
+
+### Code Quality
+
+- [x] ESLint configured
+- [x] Import alias configured
+- [x] TypeScript build verified
+- [x] Production build verified
+
+### Routing
+
+- [x] React Router configured
+- [x] Application routes created
+- [x] Main layout created
+- [x] Navbar foundation created
+- [x] Footer foundation created
+
+## Verification
+
+```bash
+npm run lint
+npm run build
+
+---23august26
 
 # Phase 2 — Design System
 
