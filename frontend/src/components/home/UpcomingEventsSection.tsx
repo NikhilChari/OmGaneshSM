@@ -55,7 +55,7 @@ function UpcomingEventsSection() {
               key={event.title}
               className="overflow-hidden rounded-2xl border border-[#9a3412]/10 bg-[#fffaf0] shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
             >
-              <div className="flex aspect-[16/9] items-center justify-center bg-[#f5ead5]">
+              <div className="flex aspect-video items-center justify-center bg-[#f5ead5]">
                 <span className="rounded-full border border-[#9a3412]/15 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#9a3412]">
                   Image Coming Soon
                 </span>
