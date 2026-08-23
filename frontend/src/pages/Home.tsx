@@ -2,6 +2,7 @@ import HeroSection from '@/components/home/HeroSection'
 import WelcomeSection from '@/components/home/WelcomeSection'
 import IntroductionSection from '@/components/home/IntroductionSection'
 import UpcomingEventsSection from '@/components/home/UpcomingEventsSection'
+import LatestNewsSection from '@/components/home/LatestNewsSection'
 function Home() {
   return (
     <>
@@ -9,6 +10,7 @@ function Home() {
       <WelcomeSection />
       <IntroductionSection />
       <UpcomingEventsSection />
+      <LatestNewsSection />
     </>
   )
 }

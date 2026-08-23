@@ -50,7 +50,7 @@ function HeroSection() {
             <img
               src={heroImage}
               alt="Om Ganesh Sanskrutik Mandal cultural event"
-              className="aspect-[4/3] w-full rounded-[1.5rem] object-cover"
+              className="aspect-4/3 w-full rounded-[1.5rem] object-cover"
             />
           </div>
         </div>
