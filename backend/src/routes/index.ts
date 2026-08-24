@@ -1,7 +1,9 @@
 import { Router } from 'express'
+
 import contactRoutes from './contactRoutes'
 import membershipRoutes from './membershipRoutes'
 import eventRoutes from './eventRoutes'
+import galleryRoutes from './galleryRoutes'
 
 const router = Router()
 
@@ -15,5 +17,6 @@ router.get('/', (_req, res) => {
 router.use('/contact', contactRoutes)
 router.use('/memberships', membershipRoutes)
 router.use('/events', eventRoutes)
+router.use('/gallery', galleryRoutes)
 
 export default router
