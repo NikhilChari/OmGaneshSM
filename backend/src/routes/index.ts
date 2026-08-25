@@ -5,6 +5,7 @@ import membershipRoutes from './membershipRoutes'
 import eventRoutes from './eventRoutes'
 import galleryRoutes from './galleryRoutes'
 import authRoutes from './authRoutes'
+import adminRoutes from './adminRoutes'
 
 const router = Router()
 
@@ -21,5 +22,6 @@ router.use('/events', eventRoutes)
 router.use('/gallery', galleryRoutes)
 router.use('/news', newsRoutes)
 router.use('/auth', authRoutes)
+router.use('/admin', adminRoutes)
 
 export default router
