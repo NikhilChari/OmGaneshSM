@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { authMiddleware } from '../middleware/authMiddleware'
 
 import {
   getAlbum,
@@ -13,8 +14,12 @@ router.get('/', listAlbums)
 
 router.get('/:slug', getAlbum)
 
-router.post('/', submitAlbum)
+router.post('/', authMiddleware, submitAlbum)
 
-router.post('/:albumId/images', submitGalleryImage)
+router.post(
+  '/:albumId/images',
+  authMiddleware,
+  submitGalleryImage,
+)
 
 export default router
