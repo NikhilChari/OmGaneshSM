@@ -1,4 +1,48 @@
+import { useState } from 'react'
+import type { SubmitEvent } from 'react'
+import { api } from '@/lib/api'
+
 function ContactFormSection() {
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
+
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    // Save the form element before the async API request.
+    // event.currentTarget can become null after await.
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
+
+    setLoading(true)
+    setSuccess('')
+    setError('')
+
+    try {
+      const result = await api.submitContact({
+        name: String(form.get('name') || ''),
+        email: String(form.get('email') || ''),
+        phone: String(form.get('phone') || ''),
+        subject: String(form.get('subject') || ''),
+        message: String(form.get('message') || ''),
+      })
+
+      setSuccess(result.message)
+
+      // Reset the saved form element after successful submission.
+      formElement.reset()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to send your message.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="bg-[#fffaf0] py-16 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -24,25 +68,30 @@ function ContactFormSection() {
               </p>
 
               <p className="mt-3 text-sm leading-6 text-[#5c4a42]">
-                [RESPONSE TIME / CONTACT AVAILABILITY INFORMATION]
+                We&apos;ll review your message and get back to you as soon as
+                possible.
               </p>
             </div>
           </div>
 
-          <form className="rounded-3xl border border-[#9a3412]/10 bg-white p-6 shadow-sm sm:p-8">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-3xl border border-[#9a3412]/10 bg-white p-6 shadow-sm sm:p-8"
+          >
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="contact-name"
                   className="text-sm font-semibold text-[#3f1d1d]"
                 >
                   Name
                 </label>
 
                 <input
-                  id="name"
+                  id="contact-name"
                   name="name"
                   type="text"
+                  required
                   placeholder="Your name"
                   className="mt-2 h-12 w-full rounded-xl border border-[#9a3412]/15 bg-[#fffaf0] px-4 text-sm text-[#3f1d1d] outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/15"
                 />
@@ -50,16 +99,17 @@ function ContactFormSection() {
 
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="contact-email"
                   className="text-sm font-semibold text-[#3f1d1d]"
                 >
                   Email
                 </label>
 
                 <input
-                  id="email"
+                  id="contact-email"
                   name="email"
                   type="email"
+                  required
                   placeholder="you@example.com"
                   className="mt-2 h-12 w-full rounded-xl border border-[#9a3412]/15 bg-[#fffaf0] px-4 text-sm text-[#3f1d1d] outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/15"
                 />
@@ -68,32 +118,35 @@ function ContactFormSection() {
 
             <div className="mt-5">
               <label
-                htmlFor="phone"
+                htmlFor="contact-phone"
                 className="text-sm font-semibold text-[#3f1d1d]"
               >
                 Phone
-                <span className="font-normal text-[#5c4a42]"> (optional)</span>
+                <span className="font-normal text-[#5c4a42]">
+                  {' '}
+                  (optional)
+                </span>
               </label>
 
               <input
-                id="phone"
+                id="contact-phone"
                 name="phone"
                 type="tel"
-                placeholder="[PHONE NUMBER]"
+                placeholder="Your phone number"
                 className="mt-2 h-12 w-full rounded-xl border border-[#9a3412]/15 bg-[#fffaf0] px-4 text-sm text-[#3f1d1d] outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/15"
               />
             </div>
 
             <div className="mt-5">
               <label
-                htmlFor="subject"
+                htmlFor="contact-subject"
                 className="text-sm font-semibold text-[#3f1d1d]"
               >
                 Subject
               </label>
 
               <input
-                id="subject"
+                id="contact-subject"
                 name="subject"
                 type="text"
                 placeholder="How can we help?"
@@ -103,32 +156,47 @@ function ContactFormSection() {
 
             <div className="mt-5">
               <label
-                htmlFor="message"
+                htmlFor="contact-message"
                 className="text-sm font-semibold text-[#3f1d1d]"
               >
                 Message
               </label>
 
               <textarea
-                id="message"
+                id="contact-message"
                 name="message"
                 rows={6}
+                required
                 placeholder="Write your message..."
                 className="mt-2 w-full resize-y rounded-xl border border-[#9a3412]/15 bg-[#fffaf0] px-4 py-3 text-sm text-[#3f1d1d] outline-none transition focus:border-[#d97706] focus:ring-2 focus:ring-[#d97706]/15"
               />
             </div>
 
-            <button
-              type="button"
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#d97706] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#b45309] sm:w-auto"
-            >
-              Send Message
-            </button>
+            {success && (
+              <p
+                role="status"
+                className="mt-5 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+              >
+                {success}
+              </p>
+            )}
 
-            <p className="mt-3 text-xs leading-5 text-[#5c4a42]">
-              Contact form submission will be connected to the backend in a
-              later phase.
-            </p>
+            {error && (
+              <p
+                role="alert"
+                className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#d97706] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#b45309] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {loading ? 'Sending...' : 'Send Message'}
+            </button>
           </form>
         </div>
       </div>

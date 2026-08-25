@@ -5,6 +5,7 @@ import Events from '@/pages/Events'
 import Gallery from '@/pages/Gallery'
 import Home from '@/pages/Home'
 import Membership from '@/pages/Membership'
+import NewsDetail from '@/pages/NewsDetail'
 import MainLayout from '@/layouts/MainLayout'
 
 function AppRoutes() {
@@ -17,6 +18,7 @@ function AppRoutes() {
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/membership" element={<Membership />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/news/:slug" element={<NewsDetail />} />
       </Route>
     </Routes>
   )
