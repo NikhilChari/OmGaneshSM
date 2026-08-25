@@ -3,11 +3,18 @@ import type { Request, Response } from 'express'
 import {
   createAlbum,
   createGalleryImage,
+  deleteAlbum,
+  deleteGalleryImage,
   getAlbumById,
+  getGalleryImageById,
   getPublishedAlbumBySlug,
   getPublishedAlbums,
+  updateAlbum,
+  updateGalleryImage,
   type CreateAlbumInput,
   type CreateGalleryImageInput,
+  type UpdateAlbumInput,
+  type UpdateGalleryImageInput,
 } from '../services/galleryService'
 
 export async function listAlbums(
@@ -106,6 +113,119 @@ export async function submitAlbum(
   }
 }
 
+export async function editAlbum(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const albumId = Number(req.params.id)
+
+    if (!Number.isInteger(albumId) || albumId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid album ID.',
+      })
+    }
+
+    const album = await getAlbumById(albumId)
+
+    if (!album) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery album not found.',
+      })
+    }
+
+    const {
+      title,
+      slug,
+      description,
+      cover_image_url,
+      status,
+    } = req.body as UpdateAlbumInput
+
+    if (!title || !slug) {
+      return res.status(400).json({
+        success: false,
+        message: 'Title and slug are required.',
+      })
+    }
+
+    const result = await updateAlbum(albumId, {
+      title: title.trim(),
+      slug: slug.trim(),
+      description: description?.trim(),
+      cover_image_url: cover_image_url?.trim(),
+      status,
+    })
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery album not found.',
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Gallery album updated successfully.',
+    })
+  } catch (error) {
+    console.error('Gallery album update failed:', error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to update gallery album.',
+    })
+  }
+}
+
+export async function removeAlbum(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const albumId = Number(req.params.id)
+
+    if (!Number.isInteger(albumId) || albumId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid album ID.',
+      })
+    }
+
+    const album = await getAlbumById(albumId)
+
+    if (!album) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery album not found.',
+      })
+    }
+
+    const result = await deleteAlbum(albumId)
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery album not found.',
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Gallery album deleted successfully.',
+    })
+  } catch (error) {
+    console.error('Gallery album deletion failed:', error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to delete gallery album.',
+    })
+  }
+}
+
 export async function submitGalleryImage(
   req: Request,
   res: Response,
@@ -166,6 +286,143 @@ export async function submitGalleryImage(
     return res.status(500).json({
       success: false,
       message: 'Unable to add gallery image.',
+    })
+  }
+}
+
+export async function editGalleryImage(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const albumId = Number(req.params.albumId)
+    const imageId = Number(req.params.imageId)
+
+    if (
+      !Number.isInteger(albumId) ||
+      albumId <= 0 ||
+      !Number.isInteger(imageId) ||
+      imageId <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid album or image ID.',
+      })
+    }
+
+    const image = await getGalleryImageById(
+      imageId,
+      albumId,
+    )
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery image not found.',
+      })
+    }
+
+    const {
+      image_url,
+      caption,
+      sort_order,
+    } = req.body as UpdateGalleryImageInput
+
+    if (!image_url) {
+      return res.status(400).json({
+        success: false,
+        message: 'Image URL is required.',
+      })
+    }
+
+    const result = await updateGalleryImage(
+      imageId,
+      albumId,
+      {
+        image_url: image_url.trim(),
+        caption: caption?.trim(),
+        sort_order:
+          sort_order !== undefined
+            ? Number(sort_order)
+            : 0,
+      },
+    )
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery image not found.',
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Gallery image updated successfully.',
+    })
+  } catch (error) {
+    console.error('Gallery image update failed:', error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to update gallery image.',
+    })
+  }
+}
+
+export async function removeGalleryImage(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const albumId = Number(req.params.albumId)
+    const imageId = Number(req.params.imageId)
+
+    if (
+      !Number.isInteger(albumId) ||
+      albumId <= 0 ||
+      !Number.isInteger(imageId) ||
+      imageId <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid album or image ID.',
+      })
+    }
+
+    const image = await getGalleryImageById(
+      imageId,
+      albumId,
+    )
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery image not found.',
+      })
+    }
+
+    const result = await deleteGalleryImage(
+      imageId,
+      albumId,
+    )
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gallery image not found.',
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Gallery image deleted successfully.',
+    })
+  } catch (error) {
+    console.error('Gallery image deletion failed:', error)
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to delete gallery image.',
     })
   }
 }
