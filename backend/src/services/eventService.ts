@@ -98,3 +98,51 @@ export async function getEventBySlug(slug: string) {
 
   return rows[0] || null
 }
+
+export async function updateEvent(
+  id: number,
+  data: CreateEventInput,
+) {
+  const [result] = await pool.execute<ResultSetHeader>(
+    `
+      UPDATE events
+      SET
+        title = ?,
+        slug = ?,
+        description = ?,
+        event_date = ?,
+        start_time = ?,
+        end_time = ?,
+        location = ?,
+        image_url = ?,
+        status = ?
+      WHERE id = ?
+    `,
+    [
+      data.title,
+      data.slug,
+      data.description || null,
+      data.event_date,
+      data.start_time || null,
+      data.end_time || null,
+      data.location || null,
+      data.image_url || null,
+      data.status || 'draft',
+      id,
+    ],
+  )
+
+  return result
+}
+
+export async function deleteEvent(id: number) {
+  const [result] = await pool.execute<ResultSetHeader>(
+    `
+      DELETE FROM events
+      WHERE id = ?
+    `,
+    [id],
+  )
+
+  return result
+}
