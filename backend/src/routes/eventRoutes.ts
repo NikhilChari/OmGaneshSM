@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { authMiddleware } from '../middleware/authMiddleware'
 import {
   getEvent,
   listEvents,
@@ -7,8 +8,11 @@ import {
 
 const router = Router()
 
+// Public
 router.get('/', listEvents)
 router.get('/:slug', getEvent)
-router.post('/', submitEvent)
+
+// Admin only
+router.post('/', authMiddleware, submitEvent)
 
 export default router
