@@ -1,8 +1,11 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:5000/api'
 
 function getAuthToken() {
-  return localStorage.getItem('omganesh_admin_token')
+  return localStorage.getItem(
+    'omganesh_admin_token',
+  )
 }
 
 async function request<T>(
@@ -60,6 +63,12 @@ async function request<T>(
 }
 
 export const api = {
+  /*
+   * =====================================================
+   * NEWS
+   * =====================================================
+   */
+
   getNews: () =>
     request<{
       success: boolean
@@ -74,11 +83,23 @@ export const api = {
       `/news/${encodeURIComponent(slug)}`,
     ),
 
+  /*
+   * =====================================================
+   * EVENTS
+   * =====================================================
+   */
+
   getEvents: () =>
     request<{
       success: boolean
       events: Event[]
     }>('/events'),
+
+  /*
+   * =====================================================
+   * GALLERY
+   * =====================================================
+   */
 
   getGallery: () =>
     request<{
@@ -87,10 +108,10 @@ export const api = {
     }>('/gallery'),
 
   getAdminGalleryAlbums: () =>
-  request<{
-    success: boolean
-    albums: GalleryAlbum[]
-  }>('/gallery/admin/albums'),
+    request<{
+      success: boolean
+      albums: GalleryAlbum[]
+    }>('/gallery/admin/albums'),
 
   getGalleryAlbum: (slug: string) =>
     request<{
@@ -99,67 +120,6 @@ export const api = {
     }>(
       `/gallery/${encodeURIComponent(slug)}`,
     ),
-
-  login: (payload: LoginPayload) =>
-    request<LoginResponse>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      },
-    ),
-
-  getMyProfile: () =>
-    request<{
-      success: boolean
-      admin: AdminProfile
-    }>('/admin/me'),
-
-  updateMyProfile: (
-    payload: UpdateAdminProfilePayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-      admin: AdminProfile
-    }>('/admin/me', {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    }),
-
-  changeMyPassword: (
-    payload: ChangePasswordPayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-    }>('/admin/me/password', {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    }),
-
-  submitContact: (
-    payload: ContactPayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-    }>('/contact', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
-
-  submitMembership: (
-    payload: MembershipPayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-      membershipId?: number
-    }>('/memberships', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
 
   createGalleryAlbum: (
     payload: CreateGalleryAlbumPayload,
@@ -211,7 +171,10 @@ export const api = {
   ) => {
     const formData = new FormData()
 
-    formData.append('image', file)
+    formData.append(
+      'image',
+      file,
+    )
 
     if (payload?.caption) {
       formData.append(
@@ -225,7 +188,9 @@ export const api = {
     ) {
       formData.append(
         'sort_order',
-        String(payload.sort_order),
+        String(
+          payload.sort_order,
+        ),
       )
     }
 
@@ -261,7 +226,10 @@ export const api = {
       )
     }
 
-    if (payload.caption !== undefined) {
+    if (
+      payload.caption !==
+      undefined
+    ) {
       formData.append(
         'caption',
         payload.caption,
@@ -269,11 +237,14 @@ export const api = {
     }
 
     if (
-      payload.sort_order !== undefined
+      payload.sort_order !==
+      undefined
     ) {
       formData.append(
         'sort_order',
-        String(payload.sort_order),
+        String(
+          payload.sort_order,
+        ),
       )
     }
 
@@ -303,7 +274,243 @@ export const api = {
         method: 'DELETE',
       },
     ),
+
+  /*
+   * =====================================================
+   * AUTHENTICATION
+   * =====================================================
+   */
+
+  login: (
+    payload: LoginPayload,
+  ) =>
+    request<LoginResponse>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify(
+          payload,
+        ),
+      },
+    ),
+
+  getMyProfile: () =>
+    request<{
+      success: boolean
+      admin: AdminProfile
+    }>('/admin/me'),
+
+  updateMyProfile: (
+    payload: UpdateAdminProfilePayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+      admin: AdminProfile
+    }>('/admin/me', {
+      method: 'PUT',
+      body: JSON.stringify(
+        payload,
+      ),
+    }),
+
+  changeMyPassword: (
+    payload: ChangePasswordPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>('/admin/me/password', {
+      method: 'PUT',
+      body: JSON.stringify(
+        payload,
+      ),
+    }),
+
+  /*
+   * =====================================================
+   * CONTACT
+   * =====================================================
+   */
+
+  submitContact: (
+    payload: ContactPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>('/contact', {
+      method: 'POST',
+      body: JSON.stringify(
+        payload,
+      ),
+    }),
+
+  /*
+   * =====================================================
+   * MEMBERSHIP
+   * =====================================================
+   */
+
+  submitMembership: (
+    payload: MembershipPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+      membershipId?: number
+    }>('/memberships', {
+      method: 'POST',
+      body: JSON.stringify(
+        payload,
+      ),
+    }),
+
+  /*
+   * =====================================================
+   * TEAM MANAGEMENT
+   * =====================================================
+   */
+
+  /*
+   * Public team members.
+   *
+   * This endpoint should return only
+   * active/published team members.
+   */
+  getTeamMembers: () =>
+    request<{
+      success: boolean
+      members: TeamMember[]
+    }>('/team'),
+
+  /*
+   * Admin team members.
+   *
+   * This endpoint should return all
+   * team members, including inactive ones.
+   */
+  getAdminTeamMembers: () =>
+    request<{
+      success: boolean
+      members: TeamMember[]
+    }>('/team/admin'),
+
+  /*
+   * Create a new team member.
+   */
+  createTeamMember: (
+    payload: CreateTeamMemberPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+      memberId: number
+    }>('/team', {
+      method: 'POST',
+      body: JSON.stringify(
+        payload,
+      ),
+    }),
+
+  /*
+   * Update team member information.
+   */
+  updateTeamMember: (
+    memberId: number,
+    payload: UpdateTeamMemberPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>(
+      `/team/${memberId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(
+          payload,
+        ),
+      },
+    ),
+
+  /*
+   * Delete team member.
+   */
+  deleteTeamMember: (
+    memberId: number,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>(
+      `/team/${memberId}`,
+      {
+        method: 'DELETE',
+      },
+    ),
+
+  /*
+   * Upload team member image.
+   */
+  uploadTeamMemberImage: (
+    memberId: number,
+    file: File,
+  ) => {
+    const formData =
+      new FormData()
+
+    formData.append(
+      'image',
+      file,
+    )
+
+    return request<{
+      success: boolean
+      message: string
+      imageUrl: string
+    }>(
+      `/team/${memberId}/image`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+    )
+  },
+
+  /*
+   * Replace team member image.
+   */
+  updateTeamMemberImage: (
+    memberId: number,
+    file: File,
+  ) => {
+    const formData =
+      new FormData()
+
+    formData.append(
+      'image',
+      file,
+    )
+
+    return request<{
+      success: boolean
+      message: string
+      imageUrl: string
+    }>(
+      `/team/${memberId}/image`,
+      {
+        method: 'PUT',
+        body: formData,
+      },
+    )
+  },
 }
+
+/*
+ * =======================================================
+ * AUTH TYPES
+ * =======================================================
+ */
 
 export interface LoginPayload {
   email: string
@@ -332,6 +539,12 @@ export interface ChangePasswordPayload {
   current_password: string
   new_password: string
 }
+
+/*
+ * =======================================================
+ * GALLERY TYPES
+ * =======================================================
+ */
 
 export interface CreateGalleryAlbumPayload {
   title: string
@@ -393,6 +606,66 @@ export interface GalleryAlbum {
   updated_at?: string
   images?: GalleryImage[]
 }
+
+/*
+ * =======================================================
+ * TEAM TYPES
+ * =======================================================
+ */
+
+export interface TeamMember {
+  id?: number
+
+  name: string
+
+  role: string
+
+  description?: string | null
+
+  image_url?: string | null
+
+  sort_order?: number
+
+  status?: 'active' | 'inactive'
+
+  created_at?: string
+
+  updated_at?: string
+}
+
+export interface CreateTeamMemberPayload {
+  name: string
+
+  role: string
+
+  description?: string
+
+  image_url?: string
+
+  sort_order?: number
+
+  status?: 'active' | 'inactive'
+}
+
+export interface UpdateTeamMemberPayload {
+  name: string
+
+  role: string
+
+  description?: string
+
+  image_url?: string
+
+  sort_order?: number
+
+  status?: 'active' | 'inactive'
+}
+
+/*
+ * =======================================================
+ * FORM TYPES
+ * =======================================================
+ */
 
 export interface ContactPayload {
   name: string
