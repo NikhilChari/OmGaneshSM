@@ -81,6 +81,26 @@ export async function getPublishedAlbums() {
 
   return rows
 }
+export async function getAllAlbums() {
+  const [rows] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          title,
+          slug,
+          description,
+          cover_image_url,
+          status,
+          created_at,
+          updated_at
+        FROM gallery_albums
+        ORDER BY created_at DESC
+      `,
+    )
+
+  return rows
+}
 
 export async function getPublishedAlbumBySlug(
   slug: string,
