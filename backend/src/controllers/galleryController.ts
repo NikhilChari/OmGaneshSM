@@ -12,6 +12,7 @@ import {
   getGalleryImageById,
   getPublishedAlbumBySlug,
   getPublishedAlbums,
+  getAllAlbums,
   updateAlbum,
   updateGalleryImage,
   type CreateAlbumInput,
@@ -121,6 +122,31 @@ async function removeUploadedFile(
   }
 }
 
+export async function listAdminAlbums(
+  _req: Request,
+  res: Response,
+) {
+  try {
+    const albums =
+      await getAllAlbums()
+
+    return res.status(200).json({
+      success: true,
+      albums,
+    })
+  } catch (error) {
+    console.error(
+      'Failed to fetch admin gallery albums:',
+      error,
+    )
+
+    return res.status(500).json({
+      success: false,
+      message:
+        'Unable to fetch gallery albums.',
+    })
+  }
+}
 export async function listAlbums(
   _req: Request,
   res: Response,

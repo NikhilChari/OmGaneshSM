@@ -1,4 +1,5 @@
 import { Router } from 'express'
+
 import { authMiddleware } from '../middleware/authMiddleware'
 import { galleryUpload } from '../middleware/uploadMiddleware'
 
@@ -6,6 +7,7 @@ import {
   editAlbum,
   editGalleryImage,
   getAlbum,
+  listAdminAlbums,
   listAlbums,
   removeAlbum,
   removeGalleryImage,
@@ -15,12 +17,37 @@ import {
 
 const router = Router()
 
-// Public
+/*
+ * Public
+ */
 router.get('/', listAlbums)
+
+/*
+ * Admin
+ *
+ * This must come before /:slug.
+ * Otherwise "admin" would be treated
+ * as a gallery slug.
+ */
+router.get(
+  '/admin/albums',
+  authMiddleware,
+  listAdminAlbums,
+)
+
+/*
+ * Public album detail
+ */
 router.get('/:slug', getAlbum)
 
-// Admin only
-router.post('/', authMiddleware, submitAlbum)
+/*
+ * Admin album management
+ */
+router.post(
+  '/',
+  authMiddleware,
+  submitAlbum,
+)
 
 router.put(
   '/:id',
@@ -34,6 +61,9 @@ router.delete(
   removeAlbum,
 )
 
+/*
+ * Admin image management
+ */
 router.post(
   '/:albumId/images',
   authMiddleware,

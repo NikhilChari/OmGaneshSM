@@ -8,8 +8,12 @@ import GalleryAlbum from '@/pages/GalleryAlbum'
 import Home from '@/pages/Home'
 import Membership from '@/pages/Membership'
 import NewsDetail from '@/pages/NewsDetail'
+import AdminLogin from '@/pages/AdminLogin'
+import AdminGallery from '@/pages/AdminGallery'
 
 import MainLayout from '@/layouts/MainLayout'
+
+import ProtectedRoute from '@/components/admin/ProtectedRoute'
 
 function AppRoutes() {
   return (
@@ -53,6 +57,18 @@ function AppRoutes() {
         <Route
           path="/news/:slug"
           element={<NewsDetail />}
+        />
+      </Route>
+
+      <Route
+        path="/admin/login"
+        element={<AdminLogin />}
+      />
+
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/admin/gallery"
+          element={<AdminGallery />}
         />
       </Route>
     </Routes>

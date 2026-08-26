@@ -21,8 +21,30 @@ export async function login(
       })
     }
 
+    const normalizedEmail = String(email)
+      .trim()
+      .toLowerCase()
+
+    console.log('[AUTH] Login attempt:', normalizedEmail)
+
     const admin = await findAdminByEmail(
-      String(email).trim().toLowerCase(),
+      normalizedEmail,
+    )
+
+    console.log(
+      '[AUTH] Admin found:',
+      admin
+        ? {
+            id: admin.id,
+            email: admin.email,
+            name: admin.name,
+            hasPasswordHash: Boolean(
+              admin.password_hash,
+            ),
+            passwordHashLength:
+              admin.password_hash?.length,
+          }
+        : null,
     )
 
     if (!admin) {
@@ -32,11 +54,18 @@ export async function login(
       })
     }
 
+    console.log('[AUTH] Verifying password...')
+
     const validPassword =
       await verifyAdminPassword(
-        password,
+        String(password),
         admin.password_hash,
       )
+
+    console.log(
+      '[AUTH] Password valid:',
+      validPassword,
+    )
 
     if (!validPassword) {
       return res.status(401).json({
@@ -45,10 +74,14 @@ export async function login(
       })
     }
 
+    console.log('[AUTH] Creating JWT...')
+
     const token = createAuthToken({
       adminId: admin.id,
       email: admin.email,
     })
+
+    console.log('[AUTH] Login successful.')
 
     return res.status(200).json({
       success: true,
@@ -61,11 +94,15 @@ export async function login(
       },
     })
   } catch (error) {
-    console.error('Admin login failed:', error)
+    console.error('[AUTH] Admin login failed:', error)
 
     return res.status(500).json({
       success: false,
       message: 'Unable to login.',
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     })
   }
 }
