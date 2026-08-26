@@ -1,14 +1,11 @@
 import cors from 'cors'
-import dotenv from 'dotenv'
 import express from 'express'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import path from 'path'
 
 import pool from './config/database'
 import routes from './routes'
-import path from 'path'
-
-dotenv.config()
 
 const app = express()
 app.use(

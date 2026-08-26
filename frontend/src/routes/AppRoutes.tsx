@@ -10,6 +10,7 @@ import Membership from '@/pages/Membership'
 import NewsDetail from '@/pages/NewsDetail'
 import AdminLogin from '@/pages/AdminLogin'
 import AdminGallery from '@/pages/AdminGallery'
+import AdminTeam from '@/pages/AdminTeam'
 
 import MainLayout from '@/layouts/MainLayout'
 
@@ -69,6 +70,11 @@ function AppRoutes() {
         <Route
           path="/admin/gallery"
           element={<AdminGallery />}
+        />
+
+        <Route
+          path="/admin/team"
+          element={<AdminTeam />}
         />
       </Route>
     </Routes>
