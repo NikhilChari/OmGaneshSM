@@ -6,10 +6,20 @@ import rateLimit from 'express-rate-limit'
 
 import pool from './config/database'
 import routes from './routes'
+import path from 'path'
 
 dotenv.config()
 
 const app = express()
+app.use(
+  '/uploads',
+  express.static(
+    path.resolve(
+      process.cwd(),
+      'uploads',
+    ),
+  ),
+)
 
 app.disable('x-powered-by')
 
