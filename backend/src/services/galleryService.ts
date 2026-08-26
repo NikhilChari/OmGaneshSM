@@ -1,4 +1,5 @@
 import pool from '../config/database'
+
 import type {
   ResultSetHeader,
   RowDataPacket,
@@ -36,51 +37,54 @@ export interface UpdateGalleryImageInput {
 export async function createAlbum(
   data: CreateAlbumInput,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    `
-      INSERT INTO gallery_albums
-        (
-          title,
-          slug,
-          description,
-          cover_image_url,
-          status
-        )
-      VALUES
-        (?, ?, ?, ?, ?)
-    `,
-    [
-      data.title,
-      data.slug,
-      data.description || null,
-      data.cover_image_url || null,
-      data.status || 'published',
-    ],
-  )
+  const [result] =
+    await pool.execute<ResultSetHeader>(
+      `
+        INSERT INTO gallery_albums
+          (
+            title,
+            slug,
+            description,
+            cover_image_url,
+            status
+          )
+        VALUES
+          (?, ?, ?, ?, ?)
+      `,
+      [
+        data.title,
+        data.slug,
+        data.description || null,
+        data.cover_image_url || null,
+        data.status || 'published',
+      ],
+    )
 
   return result
 }
 
 export async function getPublishedAlbums() {
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    `
-      SELECT
-        id,
-        title,
-        slug,
-        description,
-        cover_image_url,
-        status,
-        created_at,
-        updated_at
-      FROM gallery_albums
-      WHERE status = 'published'
-      ORDER BY created_at DESC
-    `,
-  )
+  const [rows] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          title,
+          slug,
+          description,
+          cover_image_url,
+          status,
+          created_at,
+          updated_at
+        FROM gallery_albums
+        WHERE status = 'published'
+        ORDER BY created_at DESC
+      `,
+    )
 
   return rows
 }
+
 export async function getAllAlbums() {
   const [rows] =
     await pool.execute<RowDataPacket[]>(
@@ -99,7 +103,33 @@ export async function getAllAlbums() {
       `,
     )
 
-  return rows
+  const albums = await Promise.all(
+    rows.map(async (album) => {
+      const [images] =
+        await pool.execute<RowDataPacket[]>(
+          `
+            SELECT
+              id,
+              album_id,
+              image_url,
+              caption,
+              sort_order,
+              created_at
+            FROM gallery_images
+            WHERE album_id = ?
+            ORDER BY sort_order ASC, id ASC
+          `,
+          [album.id],
+        )
+
+      return {
+        ...album,
+        images,
+      }
+    }),
+  )
+
+  return albums
 }
 
 export async function getPublishedAlbumBySlug(
@@ -314,7 +344,10 @@ export async function getGalleryImageById(
           AND album_id = ?
         LIMIT 1
       `,
-      [imageId, albumId],
+      [
+        imageId,
+        albumId,
+      ],
     )
 
   return rows[0] || null
