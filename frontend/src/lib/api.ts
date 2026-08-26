@@ -49,6 +49,12 @@ export const api = {
       albums: GalleryAlbum[]
     }>('/gallery'),
 
+  getGalleryAlbum: (slug: string) =>
+    request<{
+      success: boolean
+      album: GalleryAlbum
+    }>(`/gallery/${encodeURIComponent(slug)}`),
+
   submitContact: (payload: ContactPayload) =>
     request<{
       success: boolean
@@ -99,6 +105,7 @@ export interface GalleryImage {
   image_url: string
   caption?: string | null
   sort_order?: number
+  created_at?: string
 }
 
 export interface GalleryAlbum {
@@ -108,6 +115,8 @@ export interface GalleryAlbum {
   description?: string | null
   cover_image_url?: string | null
   status?: string
+  created_at?: string
+  updated_at?: string
   images?: GalleryImage[]
 }
 

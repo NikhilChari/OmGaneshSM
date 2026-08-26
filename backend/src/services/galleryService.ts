@@ -85,24 +85,25 @@ export async function getPublishedAlbums() {
 export async function getPublishedAlbumBySlug(
   slug: string,
 ) {
-  const [albums] = await pool.execute<RowDataPacket[]>(
-    `
-      SELECT
-        id,
-        title,
-        slug,
-        description,
-        cover_image_url,
-        status,
-        created_at,
-        updated_at
-      FROM gallery_albums
-      WHERE slug = ?
-        AND status = 'published'
-      LIMIT 1
-    `,
-    [slug],
-  )
+  const [albums] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          title,
+          slug,
+          description,
+          cover_image_url,
+          status,
+          created_at,
+          updated_at
+        FROM gallery_albums
+        WHERE slug = ?
+          AND status = 'published'
+        LIMIT 1
+      `,
+      [slug],
+    )
 
   const album = albums[0]
 
@@ -110,21 +111,22 @@ export async function getPublishedAlbumBySlug(
     return null
   }
 
-  const [images] = await pool.execute<RowDataPacket[]>(
-    `
-      SELECT
-        id,
-        album_id,
-        image_url,
-        caption,
-        sort_order,
-        created_at
-      FROM gallery_images
-      WHERE album_id = ?
-      ORDER BY sort_order ASC, id ASC
-    `,
-    [album.id],
-  )
+  const [images] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          album_id,
+          image_url,
+          caption,
+          sort_order,
+          created_at
+        FROM gallery_images
+        WHERE album_id = ?
+        ORDER BY sort_order ASC, id ASC
+      `,
+      [album.id],
+    )
 
   return {
     ...album,
@@ -135,25 +137,26 @@ export async function getPublishedAlbumBySlug(
 export async function createGalleryImage(
   data: CreateGalleryImageInput,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    `
-      INSERT INTO gallery_images
-        (
-          album_id,
-          image_url,
-          caption,
-          sort_order
-        )
-      VALUES
-        (?, ?, ?, ?)
-    `,
-    [
-      data.album_id,
-      data.image_url,
-      data.caption || null,
-      data.sort_order ?? 0,
-    ],
-  )
+  const [result] =
+    await pool.execute<ResultSetHeader>(
+      `
+        INSERT INTO gallery_images
+          (
+            album_id,
+            image_url,
+            caption,
+            sort_order
+          )
+        VALUES
+          (?, ?, ?, ?)
+      `,
+      [
+        data.album_id,
+        data.image_url,
+        data.caption || null,
+        data.sort_order ?? 0,
+      ],
+    )
 
   return result
 }
@@ -161,27 +164,51 @@ export async function createGalleryImage(
 export async function getAlbumById(
   albumId: number,
 ) {
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    `
-      SELECT
-        id,
-        status
-      FROM gallery_albums
-      WHERE id = ?
-      LIMIT 1
-    `,
-    [albumId],
-  )
+  const [rows] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          status
+        FROM gallery_albums
+        WHERE id = ?
+        LIMIT 1
+      `,
+      [albumId],
+    )
 
   return rows[0] || null
+}
+
+export async function getGalleryImagesByAlbumId(
+  albumId: number,
+) {
+  const [rows] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          album_id,
+          image_url,
+          caption,
+          sort_order,
+          created_at
+        FROM gallery_images
+        WHERE album_id = ?
+        ORDER BY sort_order ASC, id ASC
+      `,
+      [albumId],
+    )
+
+  return rows
 }
 
 export async function updateAlbum(
   albumId: number,
   data: UpdateAlbumInput,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    {
+  const [result] =
+    await pool.execute<ResultSetHeader>({
       sql: `
         UPDATE gallery_albums
         SET
@@ -200,8 +227,7 @@ export async function updateAlbum(
         data.status || 'published',
         albumId,
       ],
-    },
-  )
+    })
 
   return result
 }
@@ -209,13 +235,14 @@ export async function updateAlbum(
 export async function deleteAlbum(
   albumId: number,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    `
-      DELETE FROM gallery_albums
-      WHERE id = ?
-    `,
-    [albumId],
-  )
+  const [result] =
+    await pool.execute<ResultSetHeader>(
+      `
+        DELETE FROM gallery_albums
+        WHERE id = ?
+      `,
+      [albumId],
+    )
 
   return result
 }
@@ -225,8 +252,8 @@ export async function updateGalleryImage(
   albumId: number,
   data: UpdateGalleryImageInput,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    {
+  const [result] =
+    await pool.execute<ResultSetHeader>({
       sql: `
         UPDATE gallery_images
         SET
@@ -243,8 +270,7 @@ export async function updateGalleryImage(
         imageId,
         albumId,
       ],
-    },
-  )
+    })
 
   return result
 }
@@ -253,31 +279,33 @@ export async function getGalleryImageById(
   imageId: number,
   albumId: number,
 ) {
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    `
-      SELECT
-        id,
-        album_id,
-        image_url,
-        caption,
-        sort_order,
-        created_at
-      FROM gallery_images
-      WHERE id = ?
-        AND album_id = ?
-      LIMIT 1
-    `,
-    [imageId, albumId],
-  )
+  const [rows] =
+    await pool.execute<RowDataPacket[]>(
+      `
+        SELECT
+          id,
+          album_id,
+          image_url,
+          caption,
+          sort_order,
+          created_at
+        FROM gallery_images
+        WHERE id = ?
+          AND album_id = ?
+        LIMIT 1
+      `,
+      [imageId, albumId],
+    )
 
   return rows[0] || null
 }
+
 export async function deleteGalleryImage(
   imageId: number,
   albumId: number,
 ) {
-  const [result] = await pool.execute<ResultSetHeader>(
-    {
+  const [result] =
+    await pool.execute<ResultSetHeader>({
       sql: `
         DELETE FROM gallery_images
         WHERE id = ?
@@ -287,8 +315,7 @@ export async function deleteGalleryImage(
         imageId,
         albumId,
       ],
-    },
-  )
+    })
 
   return result
 }

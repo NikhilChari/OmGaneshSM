@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authMiddleware } from '../middleware/authMiddleware'
+import { galleryUpload } from '../middleware/uploadMiddleware'
 
 import {
   editAlbum,
@@ -36,12 +37,14 @@ router.delete(
 router.post(
   '/:albumId/images',
   authMiddleware,
+  galleryUpload.single('image'),
   submitGalleryImage,
 )
 
 router.put(
   '/:albumId/images/:imageId',
   authMiddleware,
+  galleryUpload.single('image'),
   editGalleryImage,
 )
 

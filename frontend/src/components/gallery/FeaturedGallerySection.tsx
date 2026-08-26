@@ -1,30 +1,7 @@
-const galleryItems = [
-  {
-    title: 'Cultural Celebration',
-    category: 'Cultural',
-    size: 'large',
-  },
-  {
-    title: 'Community Gathering',
-    category: 'Community',
-    size: 'small',
-  },
-  {
-    title: 'Festival Moment',
-    category: 'Festival',
-    size: 'small',
-  },
-  {
-    title: 'Special Program',
-    category: 'Events',
-    size: 'small',
-  },
-  {
-    title: 'Community Activity',
-    category: 'Community',
-    size: 'large',
-  },
-]
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import type { GalleryAlbum } from '@/lib/api'
+import { api } from '@/lib/api'
 
 function GalleryPlaceholder({
   title,
@@ -51,7 +28,9 @@ function GalleryPlaceholder({
           </svg>
         </div>
 
-        <p className="mt-4 text-sm font-semibold text-[#4a1f1f]">{title}</p>
+        <p className="mt-4 text-sm font-semibold text-[#4a1f1f]">
+          {title}
+        </p>
 
         <p className="mt-1 text-xs text-[#5c4a42]">{category}</p>
       </div>
@@ -60,6 +39,45 @@ function GalleryPlaceholder({
 }
 
 function FeaturedGallerySection() {
+  const [albums, setAlbums] = useState<GalleryAlbum[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    async function loadGallery() {
+      setLoading(true)
+      setError('')
+
+      try {
+        const result = await api.getGallery()
+
+        if (active) {
+          setAlbums(result.albums.slice(0, 5))
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Unable to load gallery.',
+          )
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadGallery()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <section className="bg-[#fffaf0] py-16 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -78,41 +96,91 @@ function FeaturedGallerySection() {
               community activity.
             </p>
           </div>
+
+          <Link
+            to="/gallery"
+            className="text-sm font-semibold text-[#9a3412] transition-colors hover:text-[#7f1d1d]"
+          >
+                        View Gallery ?
+          </Link>
         </div>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {galleryItems.map((item, index) => (
-            <article
-              key={item.title}
-              className={`group overflow-hidden rounded-3xl border border-[#9a3412]/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${
-                item.size === 'large'
-                  ? 'md:row-span-2 lg:col-span-2'
-                  : ''
-              }`}
-            >
-              <div className="relative h-full min-h-[260px]">
-                <GalleryPlaceholder
-                  title={item.title}
-                  category={item.category}
-                />
+        {loading && (
+          <div className="mt-10 rounded-3xl border border-[#9a3412]/10 bg-white p-8 shadow-sm">
+            <p className="text-sm font-medium text-[#6b554b]">
+              Loading gallery...
+            </p>
+          </div>
+        )}
 
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#3f1d1d]/80 via-[#3f1d1d]/20 to-transparent p-5 pt-12 opacity-0 transition-opacity group-hover:opacity-100">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#fbbf24]">
-                    {item.category}
-                  </p>
+        {!loading && error && (
+          <div className="mt-10 rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
+            <p className="text-sm font-medium text-red-700">{error}</p>
+          </div>
+        )}
 
-                  <h3 className="mt-1 text-lg font-bold text-white">
-                    {item.title}
-                  </h3>
-                </div>
+        {!loading && !error && albums.length === 0 && (
+          <div className="mt-10 rounded-3xl border border-[#9a3412]/10 bg-white p-8 shadow-sm">
+            <p className="text-sm font-medium text-[#6b554b]">
+              No gallery albums available yet.
+            </p>
+          </div>
+        )}
 
-                <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#4a1f1f] shadow-sm">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
+        {!loading && !error && albums.length > 0 && (
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {albums.map((album, index) => (
+              <article
+                key={album.id ?? album.slug}
+                className={`group overflow-hidden rounded-3xl border border-[#9a3412]/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${
+                  index === 0 || index === 4
+                    ? 'md:row-span-2 lg:col-span-2'
+                    : ''
+                }`}
+              >
+                <Link
+                  to={`/gallery/${album.slug}`}
+                  className="block h-full"
+                >
+                  <div className="relative h-full min-h-[260px]">
+                    {album.cover_image_url ? (
+                      <img
+                        src={album.cover_image_url}
+                        alt={album.title}
+                        className="h-full min-h-[260px] w-full object-cover"
+                      />
+                    ) : (
+                      <GalleryPlaceholder
+                        title={album.title}
+                        category={album.status || 'Gallery'}
+                      />
+                    )}
+
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#3f1d1d]/80 via-[#3f1d1d]/20 to-transparent p-5 pt-12">
+                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#fbbf24]">
+                        {album.status || 'Gallery'}
+                      </p>
+
+                      <h3 className="mt-1 text-lg font-bold text-white">
+                        {album.title}
+                      </h3>
+
+                      {album.description && (
+                        <p className="mt-1 line-clamp-2 text-sm text-white/80">
+                          {album.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#4a1f1f] shadow-sm">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
