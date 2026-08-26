@@ -43,6 +43,24 @@ function AdminGallery() {
   const [saving, setSaving] =
     useState(false)
 
+  const [uploadingAlbumId, setUploadingAlbumId] =
+    useState<number | null>(null)
+
+  const [editingImageId, setEditingImageId] =
+    useState<number | null>(null)
+
+  const [editingImageAlbumId, setEditingImageAlbumId] =
+    useState<number | null>(null)
+
+  const [editingImageFile, setEditingImageFile] =
+    useState<File | null>(null)
+
+  const [imageEditForm, setImageEditForm] =
+    useState<ImageEditForm>({
+      caption: '',
+      sort_order: '0',
+    })
+
   const [error, setError] =
     useState('')
 
@@ -54,39 +72,6 @@ function AdminGallery() {
 
   const [editingAlbumId, setEditingAlbumId] =
     useState<number | null>(null)
-
-  const [managingAlbumId, setManagingAlbumId] =
-    useState<number | null>(null)
-
-  const [uploadingImage, setUploadingImage] =
-    useState(false)
-
-  const [uploadFile, setUploadFile] =
-    useState<File | null>(null)
-
-  const [uploadCaption, setUploadCaption] =
-    useState('')
-
-  const [uploadSortOrder, setUploadSortOrder] =
-    useState('0')
-
-  const [editingImageId, setEditingImageId] =
-    useState<number | null>(null)
-
-  const [imageEditForm, setImageEditForm] =
-    useState<ImageEditForm>({
-      caption: '',
-      sort_order: '0',
-    })
-
-  const [imageSavingId, setImageSavingId] =
-    useState<number | null>(null)
-
-  const [imageDeleteId, setImageDeleteId] =
-    useState<number | null>(null)
-
-  const [replacementFiles, setReplacementFiles] =
-    useState<Record<number, File | null>>({})
 
   async function loadAlbums() {
     setLoading(true)
@@ -231,16 +216,21 @@ function AdminGallery() {
     }
   }
 
-  async function handleDelete(
+  async function handleDeleteAlbum(
     album: GalleryAlbum,
   ) {
     if (!album.id) {
       return
     }
 
+    const imageCount =
+      album.images?.length ?? 0
+
     const confirmed =
       window.confirm(
-        `Delete "${album.title}"? This will also delete its gallery images.`,
+        imageCount > 0
+          ? `Delete "${album.title}"? This will also delete ${imageCount} gallery image${imageCount === 1 ? '' : 's'}.`
+          : `Delete "${album.title}"?`,
       )
 
     if (!confirmed) {
@@ -265,12 +255,6 @@ function AdminGallery() {
         startCreate()
       }
 
-      if (
-        managingAlbumId === album.id
-      ) {
-        setManagingAlbumId(null)
-      }
-
       await loadAlbums()
     } catch (err) {
       setError(
@@ -281,104 +265,70 @@ function AdminGallery() {
     }
   }
 
-  function toggleImageManager(
-    albumId: number,
-  ) {
-    setError('')
-    setSuccess('')
-
-    if (
-      managingAlbumId === albumId
-    ) {
-      setManagingAlbumId(null)
-      resetImageUploadForm()
-      return
-    }
-
-    setManagingAlbumId(albumId)
-    resetImageUploadForm()
-  }
-
-  function resetImageUploadForm() {
-    setUploadFile(null)
-    setUploadCaption('')
-    setUploadSortOrder('0')
-    setEditingImageId(null)
-    setImageEditForm({
-      caption: '',
-      sort_order: '0',
-    })
-  }
-
-  function handleUploadFileChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0] || null
-
-    setUploadFile(file)
-  }
-
-  function handleReplacementFileChange(
-    imageId: number,
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const file =
-      event.target.files?.[0] || null
-
-    setReplacementFiles((current) => ({
-      ...current,
-      [imageId]: file,
-    }))
-  }
-
   async function handleUploadImage(
     albumId: number,
+    event: ChangeEvent<HTMLInputElement>,
   ) {
+    const file =
+      event.target.files?.[0]
+
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError(
+        'Please select a valid image file.',
+      )
+      return
+    }
+
+    const maxFileSize =
+      10 * 1024 * 1024
+
+    if (file.size > maxFileSize) {
+      setError(
+        'Image must be smaller than 10 MB.',
+      )
+      return
+    }
+
     setError('')
     setSuccess('')
-
-    if (!uploadFile) {
-      setError(
-        'Please select an image to upload.',
-      )
-      return
-    }
-
-    const parsedSortOrder =
-      Number(uploadSortOrder)
-
-    if (
-      !Number.isInteger(
-        parsedSortOrder,
-      ) ||
-      parsedSortOrder < 0
-    ) {
-      setError(
-        'Sort order must be a non-negative integer.',
-      )
-      return
-    }
-
-    setUploadingImage(true)
+    setUploadingAlbumId(albumId)
 
     try {
+      const album =
+        albums.find(
+          (item) => item.id === albumId,
+        )
+
+      const nextSortOrder =
+        (album?.images?.reduce(
+          (maximum, image) =>
+            Math.max(
+              maximum,
+              Number(
+                image.sort_order ?? 0,
+              ),
+            ),
+          -1,
+        ) ?? -1) + 1
+
       await api.uploadGalleryImage(
         albumId,
-        uploadFile,
+        file,
         {
-          caption:
-            uploadCaption.trim(),
           sort_order:
-            parsedSortOrder,
+            nextSortOrder,
         },
       )
 
       setSuccess(
         'Gallery image uploaded successfully.',
       )
-
-      resetImageUploadForm()
 
       await loadAlbums()
     } catch (err) {
@@ -388,11 +338,12 @@ function AdminGallery() {
           : 'Unable to upload gallery image.',
       )
     } finally {
-      setUploadingImage(false)
+      setUploadingAlbumId(null)
     }
   }
 
-  function startEditImage(
+  function startImageEdit(
+    albumId: number,
     image: GalleryImage,
   ) {
     if (!image.id) {
@@ -400,22 +351,25 @@ function AdminGallery() {
     }
 
     setEditingImageId(image.id)
+    setEditingImageAlbumId(albumId)
+    setEditingImageFile(null)
 
     setImageEditForm({
       caption:
         image.caption || '',
-      sort_order:
-        String(
-          image.sort_order ?? 0,
-        ),
+      sort_order: String(
+        image.sort_order ?? 0,
+      ),
     })
 
     setError('')
     setSuccess('')
   }
 
-  function cancelEditImage() {
+  function cancelImageEdit() {
     setEditingImageId(null)
+    setEditingImageAlbumId(null)
+    setEditingImageFile(null)
 
     setImageEditForm({
       caption: '',
@@ -424,26 +378,25 @@ function AdminGallery() {
   }
 
   async function handleUpdateImage(
-    albumId: number,
-    image: GalleryImage,
+    event: FormEvent<HTMLFormElement>,
   ) {
-    if (!image.id) {
+    event.preventDefault()
+
+    if (
+      !editingImageId ||
+      !editingImageAlbumId
+    ) {
       return
     }
 
-    setError('')
-    setSuccess('')
-
-    const parsedSortOrder =
+    const sortOrder =
       Number(
         imageEditForm.sort_order,
       )
 
     if (
-      !Number.isInteger(
-        parsedSortOrder,
-      ) ||
-      parsedSortOrder < 0
+      !Number.isInteger(sortOrder) ||
+      sortOrder < 0
     ) {
       setError(
         'Sort order must be a non-negative integer.',
@@ -451,44 +404,31 @@ function AdminGallery() {
       return
     }
 
-    const replacementFile =
-      replacementFiles[
-        image.id
-      ] || undefined
-
-    setImageSavingId(image.id)
+    setError('')
+    setSuccess('')
+    setSaving(true)
 
     try {
       await api.updateGalleryImage(
-        albumId,
-        image.id,
+        editingImageAlbumId,
+        editingImageId,
         {
           caption:
             imageEditForm.caption.trim(),
-          sort_order:
-            parsedSortOrder,
+          sort_order: sortOrder,
           file:
-            replacementFile,
+            editingImageFile ||
+            undefined,
         },
       )
 
       setSuccess(
-        'Gallery image updated successfully.',
+        editingImageFile
+          ? 'Gallery image replaced successfully.'
+          : 'Gallery image updated successfully.',
       )
 
-      setReplacementFiles(
-        (current) => {
-          const next = {
-            ...current,
-          }
-
-          delete next[image.id!]
-
-          return next
-        },
-      )
-
-      cancelEditImage()
+      cancelImageEdit()
 
       await loadAlbums()
     } catch (err) {
@@ -498,7 +438,7 @@ function AdminGallery() {
           : 'Unable to update gallery image.',
       )
     } finally {
-      setImageSavingId(null)
+      setSaving(false)
     }
   }
 
@@ -512,7 +452,7 @@ function AdminGallery() {
 
     const confirmed =
       window.confirm(
-        'Delete this gallery image?',
+        'Delete this gallery image? This action cannot be undone.',
       )
 
     if (!confirmed) {
@@ -521,7 +461,7 @@ function AdminGallery() {
 
     setError('')
     setSuccess('')
-    setImageDeleteId(image.id)
+    setSaving(true)
 
     try {
       await api.deleteGalleryImage(
@@ -536,20 +476,8 @@ function AdminGallery() {
       if (
         editingImageId === image.id
       ) {
-        cancelEditImage()
+        cancelImageEdit()
       }
-
-      setReplacementFiles(
-        (current) => {
-          const next = {
-            ...current,
-          }
-
-          delete next[image.id!]
-
-          return next
-        },
-      )
 
       await loadAlbums()
     } catch (err) {
@@ -559,419 +487,43 @@ function AdminGallery() {
           : 'Unable to delete gallery image.',
       )
     } finally {
-      setImageDeleteId(null)
+      setSaving(false)
     }
   }
 
-  function renderImageManager(
-    album: GalleryAlbum,
+  function handleReplacementFile(
+    event: ChangeEvent<HTMLInputElement>,
   ) {
-    if (!album.id) {
-      return null
+    const file =
+      event.target.files?.[0] ||
+      null
+
+    if (!file) {
+      setEditingImageFile(null)
+      return
     }
 
-    const images =
-      album.images || []
+    if (!file.type.startsWith('image/')) {
+      setError(
+        'Please select a valid image file.',
+      )
+      event.target.value = ''
+      return
+    }
 
-    return (
-      <div className="mt-6 border-t border-[#9a3412]/10 pt-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h4 className="text-lg font-bold text-[#3f1d1d]">
-              Gallery Images
-            </h4>
+    const maxFileSize =
+      10 * 1024 * 1024
 
-            <p className="mt-1 text-sm text-[#6b554b]">
-              {images.length}{' '}
-              {images.length === 1
-                ? 'image'
-                : 'images'}{' '}
-              in this album
-            </p>
-          </div>
+    if (file.size > maxFileSize) {
+      setError(
+        'Replacement image must be smaller than 10 MB.',
+      )
+      event.target.value = ''
+      return
+    }
 
-          <button
-            type="button"
-            onClick={resetImageUploadForm}
-            className="text-sm font-semibold text-[#9a3412] hover:text-[#7f1d1d]"
-          >
-            Reset upload form
-          </button>
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-[#9a3412]/10 bg-[#fffaf0] p-5">
-          <h5 className="font-bold text-[#3f1d1d]">
-            Upload New Image
-          </h5>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label
-                htmlFor={`gallery-upload-${album.id}`}
-                className="block text-sm font-semibold text-[#3f1d1d]"
-              >
-                Image
-              </label>
-
-              <input
-                id={`gallery-upload-${album.id}`}
-                type="file"
-                accept="image/*"
-                onChange={
-                  handleUploadFileChange
-                }
-                className="mt-2 block w-full rounded-xl border border-[#9a3412]/20 bg-white px-4 py-3 text-sm"
-              />
-
-              {uploadFile && (
-                <p className="mt-2 text-xs text-[#6b554b]">
-                  Selected:{' '}
-                  {uploadFile.name}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor={`gallery-caption-${album.id}`}
-                className="block text-sm font-semibold text-[#3f1d1d]"
-              >
-                Caption
-              </label>
-
-              <input
-                id={`gallery-caption-${album.id}`}
-                value={uploadCaption}
-                onChange={(event) =>
-                  setUploadCaption(
-                    event.target.value,
-                  )
-                }
-                placeholder="Ganesh idol decoration"
-                className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 bg-white px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor={`gallery-sort-${album.id}`}
-                className="block text-sm font-semibold text-[#3f1d1d]"
-              >
-                Sort Order
-              </label>
-
-              <input
-                id={`gallery-sort-${album.id}`}
-                type="number"
-                min="0"
-                step="1"
-                value={uploadSortOrder}
-                onChange={(event) =>
-                  setUploadSortOrder(
-                    event.target.value,
-                  )
-                }
-                className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 bg-white px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <button
-                type="button"
-                onClick={() =>
-                  handleUploadImage(
-                    album.id!,
-                  )
-                }
-                disabled={
-                  uploadingImage
-                }
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#9a3412] px-5 text-sm font-semibold text-white transition hover:bg-[#7f1d1d] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-              >
-                {uploadingImage
-                  ? 'Uploading...'
-                  : 'Upload Image'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {images.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-dashed border-[#9a3412]/20 bg-white p-8 text-center">
-            <h5 className="font-semibold text-[#3f1d1d]">
-              No gallery images yet
-            </h5>
-
-            <p className="mt-2 text-sm text-[#6b554b]">
-              Upload the first image for
-              this album above.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            {images
-              .slice()
-              .sort(
-                (a, b) =>
-                  (a.sort_order ?? 0) -
-                  (b.sort_order ?? 0),
-              )
-              .map((image) => {
-                const imageId =
-                  image.id
-
-                if (!imageId) {
-                  return null
-                }
-
-                const isEditing =
-                  editingImageId ===
-                  imageId
-
-                const isSaving =
-                  imageSavingId ===
-                  imageId
-
-                const isDeleting =
-                  imageDeleteId ===
-                  imageId
-
-                const replacementFile =
-                  replacementFiles[
-                    imageId
-                  ]
-
-                return (
-                  <article
-                    key={imageId}
-                    className="overflow-hidden rounded-2xl border border-[#9a3412]/10 bg-white shadow-sm"
-                  >
-                    <div className="aspect-[16/9] bg-[#f5eadb]">
-                      <img
-                        src={
-                          image.image_url
-                        }
-                        alt={
-                          image.caption ||
-                          album.title
-                        }
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-
-                    <div className="p-4">
-                      {!isEditing ? (
-                        <>
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-[#3f1d1d]">
-                                {image.caption ||
-                                  'No caption'}
-                              </p>
-
-                              <p className="mt-1 text-xs text-[#6b554b]">
-                                Sort order:{' '}
-                                {image.sort_order ??
-                                  0}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                startEditImage(
-                                  image,
-                                )
-                              }
-                              className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#9a3412] hover:bg-[#fff7ed]"
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDeleteImage(
-                                  album.id!,
-                                  image,
-                                )
-                              }
-                              disabled={
-                                isDeleting
-                              }
-                              className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isDeleting
-                                ? 'Deleting...'
-                                : 'Delete'}
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <div>
-                          <div>
-                            <label
-                              htmlFor={`image-caption-${imageId}`}
-                              className="block text-sm font-semibold text-[#3f1d1d]"
-                            >
-                              Caption
-                            </label>
-
-                            <input
-                              id={`image-caption-${imageId}`}
-                              value={
-                                imageEditForm.caption
-                              }
-                              onChange={(
-                                event,
-                              ) =>
-                                setImageEditForm(
-                                  (
-                                    current,
-                                  ) => ({
-                                    ...current,
-                                    caption:
-                                      event
-                                        .target
-                                        .value,
-                                  }),
-                                )
-                              }
-                              className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-                            />
-                          </div>
-
-                          <div className="mt-4">
-                            <label
-                              htmlFor={`image-sort-${imageId}`}
-                              className="block text-sm font-semibold text-[#3f1d1d]"
-                            >
-                              Sort Order
-                            </label>
-
-                            <input
-                              id={`image-sort-${imageId}`}
-                              type="number"
-                              min="0"
-                              step="1"
-                              value={
-                                imageEditForm.sort_order
-                              }
-                              onChange={(
-                                event,
-                              ) =>
-                                setImageEditForm(
-                                  (
-                                    current,
-                                  ) => ({
-                                    ...current,
-                                    sort_order:
-                                      event
-                                        .target
-                                        .value,
-                                  }),
-                                )
-                              }
-                              className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-                            />
-                          </div>
-
-                          <div className="mt-4">
-                            <label
-                              htmlFor={`image-replacement-${imageId}`}
-                              className="block text-sm font-semibold text-[#3f1d1d]"
-                            >
-                              Replace Image
-                            </label>
-
-                            <input
-                              id={`image-replacement-${imageId}`}
-                              type="file"
-                              accept="image/*"
-                              onChange={(
-                                event,
-                              ) =>
-                                handleReplacementFileChange(
-                                  imageId,
-                                  event,
-                                )
-                              }
-                              className="mt-2 block w-full rounded-xl border border-[#9a3412]/20 bg-white px-3 py-2 text-xs"
-                            />
-
-                            {replacementFile && (
-                              <p className="mt-2 text-xs text-[#6b554b]">
-                                Replacement:{' '}
-                                {
-                                  replacementFile.name
-                                }
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="mt-5 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleUpdateImage(
-                                  album.id!,
-                                  image,
-                                )
-                              }
-                              disabled={
-                                isSaving
-                              }
-                              className="rounded-xl bg-[#9a3412] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7f1d1d] disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isSaving
-                                ? 'Saving...'
-                                : 'Save Changes'}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={
-                                cancelEditImage
-                              }
-                              disabled={
-                                isSaving
-                              }
-                              className="rounded-xl border border-[#9a3412]/20 px-4 py-2 text-sm font-semibold text-[#3f1d1d] hover:bg-[#fff7ed] disabled:opacity-60"
-                            >
-                              Cancel
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDeleteImage(
-                                  album.id!,
-                                  image,
-                                )
-                              }
-                              disabled={
-                                isSaving ||
-                                isDeleting
-                              }
-                              className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isDeleting
-                                ? 'Deleting...'
-                                : 'Delete'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                )
-              })}
-          </div>
-        )}
-      </div>
-    )
+    setError('')
+    setEditingImageFile(file)
   }
 
   return (
@@ -1226,116 +778,388 @@ function AdminGallery() {
               </p>
             </div>
           ) : (
-            <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {albums.map((album) => (
-                <article
-                  key={album.id}
-                  className="overflow-hidden rounded-3xl border border-[#9a3412]/10 bg-white shadow-sm"
-                >
-                  <div className="aspect-[16/9] bg-[#f5eadb]">
-                    {album.cover_image_url ? (
-                      <img
-                        src={
-                          album.cover_image_url
-                        }
-                        alt={album.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-[#6b554b]">
-                        No cover image
+            <div className="mt-5 grid gap-6">
+              {albums.map((album) => {
+                const images =
+                  album.images ?? []
+
+                return (
+                  <article
+                    key={album.id}
+                    className="overflow-hidden rounded-3xl border border-[#9a3412]/10 bg-white shadow-sm"
+                  >
+                    <div className="grid lg:grid-cols-[280px_1fr]">
+                      <div className="aspect-[16/10] bg-[#f5eadb] lg:aspect-auto">
+                        {album.cover_image_url ? (
+                          <img
+                            src={
+                              album.cover_image_url
+                            }
+                            alt={album.title}
+                            className="h-full min-h-56 w-full object-cover"
+                          />
+                        ) : images[0]?.image_url ? (
+                          <img
+                            src={
+                              images[0].image_url
+                            }
+                            alt={album.title}
+                            className="h-full min-h-56 w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full min-h-56 items-center justify-center text-sm text-[#6b554b]">
+                            No cover image
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-[#3f1d1d]">
-                        {album.title}
-                      </h3>
+                      <div className="p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="text-xl font-bold text-[#3f1d1d]">
+                                {album.title}
+                              </h3>
 
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          album.status ===
-                          'published'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
-                        {album.status ||
-                          'published'}
-                      </span>
+                              <span
+                                className={
+                                  `rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                    album.status ===
+                                    'published'
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-yellow-100 text-yellow-700'
+                                  }`
+                                }
+                              >
+                                {album.status ||
+                                  'published'}
+                              </span>
+                            </div>
+
+                            <p className="mt-2 text-xs text-[#6b554b]">
+                              /gallery/
+                              {album.slug}
+                            </p>
+
+                            {album.description && (
+                              <p className="mt-3 max-w-3xl text-sm leading-6 text-[#6b554b]">
+                                {album.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                startEdit(
+                                  album,
+                                )
+                              }
+                              className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#9a3412] hover:bg-[#fff7ed]"
+                            >
+                              Edit Album
+                            </button>
+
+                            <a
+                              href={`/gallery/${album.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#3f1d1d] hover:bg-[#fff7ed]"
+                            >
+                              View
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteAlbum(
+                                  album,
+                                )
+                              }
+                              disabled={saving}
+                              className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                            >
+                              Delete Album
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 border-t border-[#9a3412]/10 pt-6">
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <h4 className="font-bold text-[#3f1d1d]">
+                                Gallery Images
+                              </h4>
+
+                              <p className="mt-1 text-sm text-[#6b554b]">
+                                {images.length}{' '}
+                                {images.length ===
+                                1
+                                  ? 'image'
+                                  : 'images'}
+                              </p>
+                            </div>
+
+                            {album.id && (
+                              <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-xl bg-[#9a3412] px-4 text-sm font-semibold text-white transition hover:bg-[#7f1d1d]">
+                                {uploadingAlbumId ===
+                                album.id
+                                  ? 'Uploading...'
+                                  : '+ Upload Image'}
+
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={
+                                    uploadingAlbumId ===
+                                    album.id
+                                  }
+                                  onChange={(
+                                    event,
+                                  ) =>
+                                    handleUploadImage(
+                                      album.id!,
+                                      event,
+                                    )
+                                  }
+                                />
+                              </label>
+                            )}
+                          </div>
+
+                          {images.length === 0 ? (
+                            <div className="mt-5 rounded-2xl border border-dashed border-[#9a3412]/20 bg-[#fffaf0] p-8 text-center">
+                              <p className="text-sm font-semibold text-[#3f1d1d]">
+                                No images in this album
+                              </p>
+
+                              <p className="mt-1 text-sm text-[#6b554b]">
+                                Upload the first image
+                                to this album.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                              {images.map(
+                                (image) => {
+                                  const isEditing =
+                                    editingImageId ===
+                                      image.id &&
+                                    editingImageAlbumId ===
+                                      album.id
+
+                                  return (
+                                    <div
+                                      key={
+                                        image.id
+                                      }
+                                      className="overflow-hidden rounded-2xl border border-[#9a3412]/10 bg-[#fffaf0]"
+                                    >
+                                      <div className="aspect-[4/3] bg-[#f5eadb]">
+                                        <img
+                                          src={
+                                            image.image_url
+                                          }
+                                          alt={
+                                            image.caption ||
+                                            album.title
+                                          }
+                                          className="h-full w-full object-cover"
+                                        />
+                                      </div>
+
+                                      <div className="p-4">
+                                        {!isEditing ? (
+                                          <>
+                                            <div className="flex items-center justify-between gap-3">
+                                              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-[#6b554b]">
+                                                Order{' '}
+                                                {image.sort_order ??
+                                                  0}
+                                              </span>
+                                            </div>
+
+                                            <p className="mt-3 min-h-10 text-sm text-[#6b554b]">
+                                              {image.caption ||
+                                                'No caption'}
+                                            </p>
+
+                                            <div className="mt-4 flex flex-wrap gap-2">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  startImageEdit(
+                                                    album.id!,
+                                                    image,
+                                                  )
+                                                }
+                                                className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#9a3412] hover:bg-white"
+                                              >
+                                                Edit
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleDeleteImage(
+                                                    album.id!,
+                                                    image,
+                                                  )
+                                                }
+                                                disabled={
+                                                  saving
+                                                }
+                                                className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                                              >
+                                                Delete
+                                              </button>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <form
+                                            onSubmit={
+                                              handleUpdateImage
+                                            }
+                                            className="space-y-4"
+                                          >
+                                            <div>
+                                              <label
+                                                htmlFor={`caption-${album.id}-${image.id}`}
+                                                className="block text-sm font-semibold text-[#3f1d1d]"
+                                              >
+                                                Caption
+                                              </label>
+
+                                              <input
+                                                id={`caption-${album.id}-${image.id}`}
+                                                value={
+                                                  imageEditForm.caption
+                                                }
+                                                onChange={(
+                                                  event,
+                                                ) =>
+                                                  setImageEditForm(
+                                                    (
+                                                      current,
+                                                    ) => ({
+                                                      ...current,
+                                                      caption:
+                                                        event
+                                                          .target
+                                                          .value,
+                                                    }),
+                                                  )
+                                                }
+                                                className="mt-2 min-h-10 w-full rounded-xl border border-[#9a3412]/20 bg-white px-3 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                                              />
+                                            </div>
+
+                                            <div>
+                                              <label
+                                                htmlFor={`sort-${album.id}-${image.id}`}
+                                                className="block text-sm font-semibold text-[#3f1d1d]"
+                                              >
+                                                Sort Order
+                                              </label>
+
+                                              <input
+                                                id={`sort-${album.id}-${image.id}`}
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                value={
+                                                  imageEditForm.sort_order
+                                                }
+                                                onChange={(
+                                                  event,
+                                                ) =>
+                                                  setImageEditForm(
+                                                    (
+                                                      current,
+                                                    ) => ({
+                                                      ...current,
+                                                      sort_order:
+                                                        event
+                                                          .target
+                                                          .value,
+                                                    }),
+                                                  )
+                                                }
+                                                className="mt-2 min-h-10 w-full rounded-xl border border-[#9a3412]/20 bg-white px-3 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                                              />
+                                            </div>
+
+                                            <div>
+                                              <label
+                                                htmlFor={`replace-${album.id}-${image.id}`}
+                                                className="block text-sm font-semibold text-[#3f1d1d]"
+                                              >
+                                                Replace Image
+                                              </label>
+
+                                              <input
+                                                id={`replace-${album.id}-${image.id}`}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={
+                                                  handleReplacementFile
+                                                }
+                                                className="mt-2 block w-full text-sm text-[#6b554b]"
+                                              />
+
+                                              {editingImageFile && (
+                                                <p className="mt-2 text-xs font-medium text-[#9a3412]">
+                                                  Selected:{' '}
+                                                  {
+                                                    editingImageFile.name
+                                                  }
+                                                </p>
+                                              )}
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2">
+                                              <button
+                                                type="submit"
+                                                disabled={
+                                                  saving
+                                                }
+                                                className="rounded-xl bg-[#9a3412] px-3 py-2 text-sm font-semibold text-white hover:bg-[#7f1d1d] disabled:opacity-50"
+                                              >
+                                                {saving
+                                                  ? 'Saving...'
+                                                  : 'Save'}
+                                              </button>
+
+                                              <button
+                                                type="button"
+                                                onClick={
+                                                  cancelImageEdit
+                                                }
+                                                disabled={
+                                                  saving
+                                                }
+                                                className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#3f1d1d] hover:bg-white disabled:opacity-50"
+                                              >
+                                                Cancel
+                                              </button>
+                                            </div>
+                                          </form>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                },
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-
-                    <p className="mt-2 text-xs text-[#6b554b]">
-                      /gallery/{album.slug}
-                    </p>
-
-                    {album.description && (
-                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#6b554b]">
-                        {album.description}
-                      </p>
-                    )}
-
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          startEdit(album)
-                        }
-                        className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#9a3412] hover:bg-[#fff7ed]"
-                      >
-                        Edit
-                      </button>
-
-                      <a
-                        href={`/gallery/${album.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-xl border border-[#9a3412]/20 px-3 py-2 text-sm font-semibold text-[#3f1d1d] hover:bg-[#fff7ed]"
-                      >
-                        View
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          toggleImageManager(
-                            album.id!,
-                          )
-                        }
-                        className={`rounded-xl px-3 py-2 text-sm font-semibold ${
-                          managingAlbumId ===
-                          album.id
-                            ? 'bg-[#7f1d1d] text-white'
-                            : 'border border-[#9a3412]/20 text-[#9a3412] hover:bg-[#fff7ed]'
-                        }`}
-                      >
-                        {managingAlbumId ===
-                        album.id
-                          ? 'Close Images'
-                          : 'Manage Images'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleDelete(album)
-                        }
-                        className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
-                      >
-                        Delete
-                      </button>
-                    </div>
-
-                    {managingAlbumId ===
-                      album.id &&
-                      renderImageManager(
-                        album,
-                      )}
-                  </div>
-                </article>
-              ))}
+                  </article>
+                )
+              })}
             </div>
           )}
         </section>
