@@ -214,31 +214,31 @@ The following flow has been tested successfully:
 
 # Phase 10 — Admin Team Management
 
-### Status: ⏳ Next
+### Status: completed
 
 The admin will be able to manage the organisation's team members without requiring code changes.
 
 ## Team Management
 
-- [ ] Create team member
-- [ ] Edit team member
-- [ ] Delete team member
-- [ ] Upload team member photo
-- [ ] Replace team member photo
-- [ ] Team member name
-- [ ] Team member role/designation
-- [ ] Team member description/bio
-- [ ] Display/order management
-- [ ] Active/inactive status
-- [ ] Admin-only team management APIs
-- [ ] Public team section consumes database data
-- [ ] Loading states
-- [ ] Error states
-- [ ] Success states
-- [ ] Delete confirmation
-- [ ] Uploaded-file cleanup
-- [ ] Frontend/backend integration
-- [ ] Persistence testing
+- [x] Create team member
+- [x] Edit team member
+- [x] Delete team member
+- [x] Upload team member photo
+- [x] Replace team member photo
+- [x] Team member name
+- [x] Team member role/designation
+- [x] Team member description/bio
+- [x] Display/order management
+- [x] Active/inactive status
+- [x] Admin-only team management APIs
+- [x] Public team section consumes database data
+- [x] Loading states
+- [x] Error states
+- [x] Success states
+- [x] Delete confirmation
+- [x] Uploaded-file cleanup
+- [x] Frontend/backend integration
+- [x] Persistence testing
 
 ### Goal
 
@@ -254,13 +254,15 @@ The existing design language and frontend structure should be reused. The focus 
 
 # Phase 11 — Admin Content Management Completion
 
-### Status: ⏳ Planned
+### Status: ongoing
 
 Review existing content that is currently static or partially managed and determine which areas should become administrator-editable.
 
 Potential areas:
 
-- [ ] News management
+- [x] News management
+- [x] Gallery management
+- [x] Team management
 - [ ] Event management
 - [ ] Homepage content where necessary
 - [ ] Contact/enquiry management
