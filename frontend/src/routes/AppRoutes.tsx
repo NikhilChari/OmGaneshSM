@@ -7,10 +7,13 @@ import Gallery from '@/pages/Gallery'
 import GalleryAlbum from '@/pages/GalleryAlbum'
 import Home from '@/pages/Home'
 import Membership from '@/pages/Membership'
+import News from '@/pages/News'
 import NewsDetail from '@/pages/NewsDetail'
+
 import AdminLogin from '@/pages/AdminLogin'
 import AdminGallery from '@/pages/AdminGallery'
 import AdminTeam from '@/pages/AdminTeam'
+import AdminNews from '@/pages/AdminNews'
 
 import MainLayout from '@/layouts/MainLayout'
 
@@ -56,6 +59,11 @@ function AppRoutes() {
         />
 
         <Route
+          path="/news"
+          element={<News />}
+        />
+
+        <Route
           path="/news/:slug"
           element={<NewsDetail />}
         />
@@ -75,6 +83,11 @@ function AppRoutes() {
         <Route
           path="/admin/team"
           element={<AdminTeam />}
+        />
+
+        <Route
+          path="/admin/news"
+          element={<AdminNews />}
         />
       </Route>
     </Routes>

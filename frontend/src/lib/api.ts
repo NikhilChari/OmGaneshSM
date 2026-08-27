@@ -85,6 +85,58 @@ export const api = {
 
   /*
    * =====================================================
+   * ADMIN NEWS
+   * =====================================================
+   */
+
+  getAdminNews: () =>
+    request<{
+      success: boolean
+      news: News[]
+    }>('/news/admin'),
+
+  createNews: (
+    payload: CreateNewsPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+      newsId: number
+    }>('/news', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  updateNews: (
+    newsId: number,
+    payload: UpdateNewsPayload,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>(
+      `/news/${newsId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      },
+    ),
+
+  deleteNews: (
+    newsId: number,
+  ) =>
+    request<{
+      success: boolean
+      message: string
+    }>(
+      `/news/${newsId}`,
+      {
+        method: 'DELETE',
+      },
+    ),
+
+  /*
+   * =====================================================
    * EVENTS
    * =====================================================
    */
@@ -562,30 +614,6 @@ export interface UpdateGalleryAlbumPayload {
   status?: 'draft' | 'published'
 }
 
-export interface News {
-  id?: number
-  title: string
-  slug: string
-  excerpt?: string | null
-  content: string
-  image_url?: string | null
-  published_at?: string | null
-  status?: string
-}
-
-export interface Event {
-  id?: number
-  title: string
-  slug: string
-  description?: string | null
-  event_date: string
-  start_time?: string | null
-  end_time?: string | null
-  location?: string | null
-  image_url?: string | null
-  status?: string
-}
-
 export interface GalleryImage {
   id?: number
   album_id?: number
@@ -605,6 +633,64 @@ export interface GalleryAlbum {
   created_at?: string
   updated_at?: string
   images?: GalleryImage[]
+}
+
+/*
+ * =======================================================
+ * NEWS TYPES
+ * =======================================================
+ */
+
+export interface News {
+  id?: number
+  title: string
+  slug: string
+  excerpt?: string | null
+  content: string
+  image_url?: string | null
+  published_at?: string | null
+  status?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface CreateNewsPayload {
+  title: string
+  slug: string
+  excerpt?: string
+  content: string
+  image_url?: string
+  published_at?: string | null
+  status?: 'draft' | 'published'
+}
+
+export interface UpdateNewsPayload {
+  title: string
+  slug: string
+  excerpt?: string
+  content: string
+  image_url?: string
+  published_at?: string | null
+  status?: 'draft' | 'published'
+}
+
+/*
+ * =======================================================
+ * EVENT TYPES
+ * =======================================================
+ */
+
+export interface Event {
+  id?: number
+  title: string
+  slug: string
+  description?: string | null
+  event_date: string
+  start_time?: string | null
+  end_time?: string | null
+  location?: string | null
+  image_url?: string | null
+  status?: string
 }
 
 /*

@@ -307,6 +307,37 @@ function AdminTeam() {
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#9a3412]">
               Om Ganesh
             </p>
+            <nav className="mb-8 rounded-2xl border border-[#9a3412]/10 bg-white p-3 shadow-sm">
+  <div className="flex flex-wrap items-center gap-2">
+    <Link
+      to="/admin/gallery"
+      className="rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#fff7ed] hover:text-[#9a3412]"
+    >
+      Gallery Management
+    </Link>
+
+    <Link
+      to="/admin/team"
+      className="rounded-xl bg-[#9a3412] px-4 py-2 text-sm font-semibold text-white"
+    >
+      Team Management
+    </Link>
+
+    <Link
+      to="/admin/news"
+      className="rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#fff7ed] hover:text-[#9a3412]"
+    >
+      News Management
+    </Link>
+
+    <Link
+      to="/"
+      className="ml-auto rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#f5f5f4]"
+    >
+      View Website
+    </Link>
+  </div>
+</nav>
 
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#3f1d1d]">
               Team Management

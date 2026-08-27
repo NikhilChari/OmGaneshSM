@@ -1,362 +1,211 @@
-git status
-git branch --show-current
-git add Phases.md
-git commit -m "docs: update development phases and project status"
-git push origin <your-current-branch># Om Ganesh — Development Phases
+# Om Ganesh — Development Phases
+
+> Project tracking document. Update this file whenever a phase or major feature is completed.
 
 ## Project Status
 
-**Current Stage:** Core platform implemented — moving into final admin/content-management features and production readiness.
+**Current Phase:** Phase 11 — Admin Content Management Completion  
+**Overall Status:** 🟢 In Development
 
-The project currently has the main public website, backend API, admin authentication, admin profile management, and gallery management implemented and integrated.
-
-The remaining work should focus on completing practical admin content-management features, validation, testing, documentation, and production readiness rather than major UI/UX redesigns.
+The core public website, backend API, database integration, admin authentication, admin profile/security, gallery management, team management, and admin news management are implemented. The remaining work is focused on testing, security review, production readiness, and practical admin content-management improvements.
 
 ---
 
 # Phase 1 — Project Foundation
 
-### Status: ✅ Completed
+**Status:** ✅ Complete
 
-- [x] Frontend project setup
-- [x] Backend/API setup
-- [x] Database integration
+- [x] React/Vite frontend setup
+- [x] TypeScript configuration
+- [x] Express backend setup
+- [x] Backend TypeScript configuration
 - [x] Environment configuration
-- [x] Basic project structure
+- [x] MySQL/Aiven database integration
+- [x] API route structure
 - [x] Frontend/backend communication
-- [x] Shared API patterns
-- [x] Basic error handling
 
 ---
 
-# Phase 2 — Public Website Foundation
+# Phase 2 — Core Website Features
 
-### Status: ✅ Completed
+**Status:** ✅ Complete
 
+### Public Website
 - [x] Homepage
 - [x] Navigation
 - [x] Footer
 - [x] Responsive layouts
-- [x] Public content sections
-- [x] Mobile responsiveness
-- [x] Basic accessibility considerations
-- [x] Public API integration
+- [x] About / Team section
+- [x] Events
+- [x] Gallery
+- [x] News
+- [x] Membership
+- [x] Contact
+
+### Backend / Database
+- [x] News API and database table
+- [x] Events API and database table
+- [x] Gallery albums and images
+- [x] Contact API and database table
+- [x] Membership API and database table
 
 ---
 
-# Phase 3 — News / Announcements
+# Phase 3 — Admin Authentication & Profile
 
-### Status: ✅ Completed / Integrated
-
-- [x] News listing
-- [x] News detail pages
-- [x] Slug-based navigation
-- [x] Backend API integration
-- [x] Database-backed news content
-- [x] Public news display
-
-### Future enhancement
-
-- [ ] Admin news management if required
-- [ ] Rich text/content editor if required
-- [ ] Draft/published workflow improvements
-
----
-
-# Phase 4 — Events
-
-### Status: ✅ Core functionality completed
-
-- [x] Event listing
-- [x] Event details
-- [x] Event date/time information
-- [x] Event location
-- [x] Event status
-- [x] Backend integration
-- [x] Database-backed event data
-
-### Optional future enhancement
-
-- [ ] Event registration
-- [ ] Registration management
-- [ ] Registration capacity
-- [ ] Participant list for administrators
-
-Event registration should only be implemented if the organisation actually needs registrations for specific events, competitions, workshops, or similar activities.
-
----
-
-# Phase 5 — Membership
-
-### Status: ✅ Completed
-
-- [x] Membership form
-- [x] Membership API
-- [x] Database integration
-- [x] Form validation
-- [x] Submission handling
-- [x] Success/error states
-
-### Future enhancement
-
-- [ ] Admin membership management
-- [ ] Membership approval workflow
-- [ ] Member status management
-- [ ] Member search/filtering
-- [ ] Export member records
-
----
-
-# Phase 6 — Contact / Enquiries
-
-### Status: ✅ Completed
-
-- [x] Contact form
-- [x] Backend API
-- [x] Database integration
-- [x] Validation
-- [x] Success/error handling
-
-### Future enhancement
-
-- [ ] Admin enquiry management
-- [ ] Read/unread status
-- [ ] Enquiry filtering
-- [ ] Admin response workflow
-
----
-
-# Phase 7 — Admin Authentication
-
-### Status: ✅ Completed
+**Status:** ✅ Complete
 
 - [x] Admin login
-- [x] JWT authentication
-- [x] Authentication middleware
-- [x] Protected admin APIs
-- [x] Token handling
-- [x] Admin session handling
-- [x] Unauthorized request handling
-- [x] Admin logout/session cleanup
+- [x] JWT token generation
+- [x] JWT verification middleware
+- [x] Protected admin routes
+- [x] Admin profile management
+- [x] Update admin profile
+- [x] Change admin password
+- [x] Environment-based JWT/database credentials
+- [x] `.env` excluded from Git
 
 ---
 
-# Phase 8 — Admin Profile & Security
+# Phase 4 — Admin Gallery Management
 
-### Status: ✅ Completed
-
-- [x] Admin profile page
-- [x] Update admin name
-- [x] Update admin email
-- [x] Change password
-- [x] Current-password validation
-- [x] Protected profile APIs
-- [x] Success/error states
-
----
-
-# Phase 9 — Gallery
-
-### Status: ✅ Completed
-
-## Public Gallery
-
-- [x] Gallery album listing
-- [x] Published album filtering
-- [x] Album detail pages
-- [x] Album slug routing
-- [x] Gallery image display
-- [x] Responsive gallery layout
-
-## Admin Gallery
+**Status:** ✅ Complete
 
 - [x] Gallery Management page
-- [x] Create album
-- [x] Edit album
-- [x] Delete album
+- [x] Create/edit/delete albums
 - [x] Album status management
-- [x] Album cover image
-- [x] Upload images
-- [x] Display album images
-- [x] Image preview
+- [x] Upload/preview images
 - [x] Caption editing
 - [x] Sort-order management
-- [x] Replace image
-- [x] Delete image
-- [x] Loading states
-- [x] Error states
-- [x] Success states
+- [x] Replace images
+- [x] Delete images
 - [x] Destructive-action confirmation
 - [x] Uploaded-file cleanup
 - [x] Album deletion with image cleanup
 - [x] Admin album response includes images
-- [x] Frontend/backend integration verified
-
-### Gallery verification completed
-
-The following flow has been tested successfully:
-
-1. [x] Login to admin
-2. [x] Open Gallery Management
-3. [x] Confirm album image count
-4. [x] Upload image
-5. [x] Confirm image appears
-6. [x] Edit caption
-7. [x] Change sort order
-8. [x] Replace image
-9. [x] Delete image
-10. [x] Refresh page
-11. [x] Confirm changes persist
-12. [x] Delete album containing images
-13. [x] Confirm album and images disappear
+- [x] Frontend/backend integration
+- [x] End-to-end gallery verification
 
 ---
 
-# Phase 10 — Admin Team Management
+# Phase 5 — Admin Team Management
 
-### Status: ⏳ Next
+**Status:** ✅ Complete
 
-The admin will be able to manage the organisation's team members without requiring code changes.
+### Database
+- [x] `team_members` table
+- [x] Aiven/MySQL database verification
+- [x] Team member schema verified
 
-## Team Management
+### Admin Team Management
+- [x] Create team member
+- [x] Edit team member
+- [x] Delete team member
+- [x] Upload team member photo
+- [x] Replace team member photo
+- [x] Name and role/designation
+- [x] Description/bio
+- [x] Display/sort order
+- [x] Active/inactive status
+- [x] Admin-only team APIs
+- [x] Loading/error/success states
+- [x] Delete confirmation
+- [x] Uploaded-file cleanup
+- [x] Frontend/backend integration
+- [x] Persistence testing
 
-- [ ] Create team member
-- [ ] Edit team member
-- [ ] Delete team member
-- [ ] Upload team member photo
-- [ ] Replace team member photo
-- [ ] Team member name
-- [ ] Team member role/designation
-- [ ] Team member description/bio
-- [ ] Display/order management
-- [ ] Active/inactive status
-- [ ] Admin-only team management APIs
-- [ ] Public team section consumes database data
-- [ ] Loading states
-- [ ] Error states
-- [ ] Success states
-- [ ] Delete confirmation
-- [ ] Uploaded-file cleanup
-- [ ] Frontend/backend integration
-- [ ] Persistence testing
-
-### Goal
-
-Allow administrators to update the organisation's team from the admin panel instead of modifying frontend source code.
-
-### UI/UX constraint
-
-No major redesign is required.
-
-The existing design language and frontend structure should be reused. The focus is functionality, data management, validation, and integration.
+### Public Team
+- [x] Public team API
+- [x] Public Team section consumes database data
 
 ---
 
-# Phase 11 — Admin Content Management Completion
+# Phase 6 — Admin News Management
 
-### Status: ⏳ Planned
+**Status:** ✅ Complete / Ready to Merge
 
-Review existing content that is currently static or partially managed and determine which areas should become administrator-editable.
+The `feat/admin-news-management` branch is ahead of `main` by one commit and contains the complete admin news-management implementation.
 
-Potential areas:
+### Backend
+- [x] Admin news listing API
+- [x] Create news API
+- [x] Update news API
+- [x] Delete news API
+- [x] Admin authorization for protected news operations
+- [x] News validation/error handling
+- [x] News service integration
 
-- [ ] News management
-- [ ] Event management
-- [ ] Homepage content where necessary
-- [ ] Contact/enquiry management
-- [ ] Membership management
-- [ ] Other organisation information that changes frequently
+### Frontend
+- [x] `AdminNews.tsx`
+- [x] Admin news route
+- [x] Create news form
+- [x] Edit news form
+- [x] Delete news action
+- [x] News status management
+- [x] Loading/error/success states
+- [x] Admin navigation links for Gallery, Team, and News
+- [x] Existing admin pages updated to expose the management options
 
-Only features that provide practical administrative value should be implemented.
-
-Avoid unnecessary CMS complexity.
-
----
-
-# Phase 12 — Event Registration
-
-### Status: ⏸ Optional
-
-Event registration is **not required for the core platform**.
-
-It can be implemented later if the organisation hosts:
-
-- Competitions
-- Workshops
-- Cultural programmes
-- Special events
-- Community activities
-- Events requiring participant registration
-
-Possible functionality:
-
-- [ ] Enable/disable registration per event
-- [ ] Public registration form
-- [ ] Registration database
-- [ ] Participant details
-- [ ] Registration confirmation
-- [ ] Registration capacity
-- [ ] Admin participant list
-- [ ] Export registrations
-
-This phase should remain optional until there is a real requirement.
+### Verification
+- [x] Feature tests passed
+- [x] Build/tests reported as passing before merge
+- [x] Branch compared with `main`
+- [ ] Merge PR into `main`
+- [ ] Post-merge smoke test
 
 ---
 
-# Phase 13 — Volunteer Management
+# Phase 7 — Admin Content Management Completion
 
-### Status: ⏸ Optional / Deferred
+**Status:** 🟡 In Progress
 
-A separate volunteer-management system is not required at this stage.
+Review remaining content that would provide practical value when managed from the admin panel.
 
-The organisation can use the existing membership process for people who want to become members and participate in activities.
+- [x] Admin news management
+- [x] Admin gallery management
+- [x] Admin team management
+- [ ] Admin event management, if required
+- [ ] Admin membership management, if required
+- [ ] Admin contact/enquiry management, if required
+- [ ] Other frequently changing organisation content, if required
 
-A dedicated volunteer system may be introduced later if operational requirements justify it.
-
-Possible future functionality:
-
-- [ ] Volunteer interest form
-- [ ] Volunteer categories
-- [ ] Volunteer availability
-- [ ] Admin volunteer management
-- [ ] Volunteer assignment
-
-This phase should not block project completion.
+Avoid unnecessary CMS complexity; implement only practical administrative functionality.
 
 ---
 
-# Phase 14 — Testing & Quality Assurance
+# Phase 8 — Testing & Quality Assurance
 
-### Status: ⏳ In Progress / Finalisation
+**Status:** 🟡 In Progress
 
-- [x] Gallery end-to-end testing
 - [x] Admin authentication testing
+- [x] Gallery end-to-end testing
+- [x] Team management feature testing
+- [x] News management feature tests
 - [x] Frontend/backend integration testing
-- [ ] Complete admin feature testing
-- [ ] Public-page testing
-- [ ] API error testing
-- [ ] Authentication/authorization testing
-- [ ] File-upload validation
+- [x] Production build verification reported as passing
+- [ ] Complete public-page regression testing
+- [ ] API error/edge-case testing
+- [ ] Authentication/authorization regression testing
+- [ ] File-upload validation testing
 - [ ] Database constraint testing
 - [ ] Mobile responsiveness verification
 - [ ] Browser compatibility checks
-- [ ] Production build verification
+- [ ] Final smoke test after merge
 
 ---
 
-# Phase 15 — Security Review
+# Phase 9 — Security Review
 
-### Status: ⏳ Planned
+**Status:** 🟡 In Progress
 
-- [ ] Verify all admin routes require authentication
-- [ ] Verify unauthorized requests are rejected
-- [ ] Validate all request parameters
-- [ ] Validate uploaded files
-- [ ] Restrict upload types
-- [ ] Restrict upload sizes
-- [ ] Prevent unsafe file paths
-- [x] Uploaded gallery file path traversal protection
+- [x] Protected admin APIs
+- [x] Uploaded gallery path traversal protection
 - [x] Uploaded gallery file cleanup
+- [x] Team uploaded-file cleanup/path safety handling
+- [ ] Verify all admin routes require authentication
+- [ ] Verify unauthorized requests are rejected consistently
+- [ ] Validate all uploaded file types
+- [ ] Validate upload size limits
 - [ ] Review CORS configuration
 - [ ] Review environment variables
 - [ ] Review database credentials
@@ -365,9 +214,9 @@ This phase should not block project completion.
 
 ---
 
-# Phase 16 — Production Readiness
+# Phase 10 — Production Readiness
 
-### Status: ⏳ Planned
+**Status:** ⏳ Planned
 
 - [ ] Production environment configuration
 - [ ] Production database configuration
@@ -380,13 +229,13 @@ This phase should not block project completion.
 - [ ] Error monitoring
 - [ ] Deployment verification
 - [ ] HTTPS verification
-- [ ] Final smoke testing
+- [ ] Final production smoke testing
 
 ---
 
-# Phase 17 — Documentation
+# Phase 11 — Documentation
 
-### Status: ⏳ In Progress
+**Status:** 🟡 In Progress
 
 - [x] PRD created
 - [x] Development phases documented
@@ -396,7 +245,23 @@ This phase should not block project completion.
 - [ ] Environment variable documentation
 - [ ] Database setup documentation
 - [ ] File upload/storage documentation
-- [ ] Final project README update
+- [ ] Final README update
+
+---
+
+# Optional Future Phases
+
+## Event Registration
+
+**Status:** ⏸ Optional / Deferred
+
+Only implement if the organisation requires registrations for competitions, workshops, cultural programmes, special events, or community activities.
+
+## Volunteer Management
+
+**Status:** ⏸ Optional / Deferred
+
+A dedicated volunteer-management system should not block completion of the core project unless operational requirements justify it.
 
 ---
 
@@ -416,27 +281,29 @@ This phase should not block project completion.
 - Public gallery
 - Admin gallery
 - Gallery image management
+- Public team section
+- Admin team management
+- Admin news management
 - Frontend/backend integration
 
 ## Current Phase
 
-**Phase 10 — Admin Team Management**
+**Phase 7 — Admin Content Management Completion**
 
-The next implementation should focus on making the existing team section database-driven and manageable through the admin panel.
+The immediate priority is to merge `feat/admin-news-management`, run a post-merge smoke test, and then complete the remaining testing/security/production-readiness work.
 
 ---
 
 # Recommended Remaining Priority
 
-1. **Admin Team Management**
-2. **Review remaining static/admin content**
-3. **Complete testing**
-4. **Security review**
-5. **Production configuration**
-6. **Deployment**
-7. **Final documentation**
+1. **Merge and smoke-test Admin News Management**
+2. **Review remaining admin content requirements**
+3. **Complete regression testing**
+4. **Complete security review**
+5. **Production configuration and deployment**
+6. **Final documentation**
 
-Event registration and volunteer management remain optional and should not delay the main project completion unless the organisation specifically requests them.
+Event registration and volunteer management remain optional and should not delay core project completion.
 
 ---
 
@@ -446,12 +313,14 @@ The project can be considered feature-complete when:
 
 - [ ] Required public functionality works
 - [ ] Required admin functionality works
-- [ ] Team management is complete
-- [ ] Frontend/backend integration is stable
-- [ ] Database persistence is verified
-- [ ] Authentication/authorization is verified
+- [x] Team management is complete
+- [x] News management is complete
+- [x] Gallery management is complete
+- [ ] Frontend/backend integration is stable after final regression testing
+- [ ] Database persistence is fully verified
+- [ ] Authentication/authorization is fully verified
 - [ ] File uploads are secure and cleaned up correctly
-- [ ] Production build succeeds
+- [x] Production build succeeds
 - [ ] Security review is completed
 - [ ] Deployment is verified
 - [ ] Documentation is updated
