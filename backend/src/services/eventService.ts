@@ -70,6 +70,28 @@ export async function getPublishedEvents() {
   )
 
   return rows
+}export async function getAdminEvents() {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `
+      SELECT
+        id,
+        title,
+        slug,
+        description,
+        event_date,
+        start_time,
+        end_time,
+        location,
+        image_url,
+        status,
+        created_at,
+        updated_at
+      FROM events
+      ORDER BY event_date DESC, start_time DESC
+    `,
+  )
+
+  return rows
 }
 
 export async function getEventBySlug(slug: string) {

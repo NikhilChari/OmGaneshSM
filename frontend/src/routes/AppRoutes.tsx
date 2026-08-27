@@ -14,6 +14,7 @@ import AdminLogin from '@/pages/AdminLogin'
 import AdminGallery from '@/pages/AdminGallery'
 import AdminTeam from '@/pages/AdminTeam'
 import AdminNews from '@/pages/AdminNews'
+import AdminEvents from '@/pages/AdminEvents'
 
 import MainLayout from '@/layouts/MainLayout'
 
@@ -88,6 +89,11 @@ function AppRoutes() {
         <Route
           path="/admin/news"
           element={<AdminNews />}
+        />
+
+        <Route
+          path="/admin/events"
+          element={<AdminEvents />}
         />
       </Route>
     </Routes>

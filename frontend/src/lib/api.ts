@@ -2,6 +2,18 @@ const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   'http://localhost:5000/api'
 
+export interface CreateEventPayload {
+  title: string
+  slug: string
+  description?: string
+  event_date: string
+  start_time?: string
+  end_time?: string
+  location?: string
+  image_url?: string
+  status?: 'draft' | 'published' | 'cancelled'
+}
+
 function getAuthToken() {
   return localStorage.getItem(
     'omganesh_admin_token',
@@ -146,6 +158,44 @@ export const api = {
       success: boolean
       events: Event[]
     }>('/events'),
+
+getAdminEvents: () =>
+  request<{
+    success: boolean
+    events: Event[]
+  }>('/events/admin'),
+
+createEvent: (
+  payload: CreateEventPayload,
+) =>
+  request<{
+    success: boolean
+    message: string
+    eventId: number
+  }>('/events', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+
+updateEvent: (
+  id: number,
+  payload: CreateEventPayload,
+) =>
+  request<{
+    success: boolean
+    message: string
+  }>(`/events/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }),
+
+deleteEvent: (id: number) =>
+  request<{
+    success: boolean
+    message: string
+  }>(`/events/${id}`, {
+    method: 'DELETE',
+  }),
 
   /*
    * =====================================================
@@ -451,39 +501,120 @@ export const api = {
   /*
    * Create a new team member.
    */
-  createTeamMember: (
-    payload: CreateTeamMemberPayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-      memberId: number
-    }>('/team', {
-      method: 'POST',
-      body: JSON.stringify(
-        payload,
-      ),
-    }),
+createTeamMember: (
+  payload: CreateTeamMemberPayload & {
+    file?: File
+  },
+) => {
+  const formData = new FormData()
 
-  /*
-   * Update team member information.
-   */
-  updateTeamMember: (
-    memberId: number,
-    payload: UpdateTeamMemberPayload,
-  ) =>
-    request<{
-      success: boolean
-      message: string
-    }>(
-      `/team/${memberId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(
-          payload,
-        ),
-      },
-    ),
+  formData.append(
+    'name',
+    payload.name,
+  )
+
+  formData.append(
+    'role',
+    payload.role,
+  )
+
+  if (payload.description !== undefined) {
+    formData.append(
+      'description',
+      payload.description,
+    )
+  }
+
+  if (payload.sort_order !== undefined) {
+    formData.append(
+      'sort_order',
+      String(payload.sort_order),
+    )
+  }
+
+  if (payload.status !== undefined) {
+    formData.append(
+      'status',
+      payload.status,
+    )
+  }
+
+  if (payload.file) {
+    formData.append(
+      'image',
+      payload.file,
+    )
+  }
+
+  return request<{
+    success: boolean
+    message: string
+    memberId: number
+    imageUrl?: string | null
+  }>('/team', {
+    method: 'POST',
+    body: formData,
+  })
+},
+
+updateTeamMember: (
+  memberId: number,
+  payload: UpdateTeamMemberPayload & {
+    file?: File
+  },
+) => {
+  const formData = new FormData()
+
+  formData.append(
+    'name',
+    payload.name,
+  )
+
+  formData.append(
+    'role',
+    payload.role,
+  )
+
+  if (payload.description !== undefined) {
+    formData.append(
+      'description',
+      payload.description,
+    )
+  }
+
+  if (payload.sort_order !== undefined) {
+    formData.append(
+      'sort_order',
+      String(payload.sort_order),
+    )
+  }
+
+  if (payload.status !== undefined) {
+    formData.append(
+      'status',
+      payload.status,
+    )
+  }
+
+  if (payload.file) {
+    formData.append(
+      'image',
+      payload.file,
+    )
+  }
+
+  return request<{
+    success: boolean
+    message: string
+    imageUrl?: string | null
+  }>(
+    `/team/${memberId}`,
+    {
+      method: 'PUT',
+      body: formData,
+    },
+  )
+},
 
   /*
    * Delete team member.

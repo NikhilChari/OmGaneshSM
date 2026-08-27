@@ -8,57 +8,72 @@ import { Link } from 'react-router-dom'
 
 import {
   api,
-  type CreateNewsPayload,
-  type News,
+  type Event,
 } from '@/lib/api'
 
-interface NewsForm {
+interface EventForm {
   title: string
   slug: string
-  excerpt: string
-  content: string
+  description: string
+  event_date: string
+  start_time: string
+  end_time: string
+  location: string
   image_url: string
-  published_at: string
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'cancelled'
 }
 
-const emptyForm: NewsForm = {
+interface CreateEventPayload {
+  title: string
+  slug: string
+  description?: string
+  event_date: string
+  start_time?: string
+  end_time?: string
+  location?: string
+  image_url?: string
+  status: 'draft' | 'published' | 'cancelled'
+}
+
+const emptyForm: EventForm = {
   title: '',
   slug: '',
-  excerpt: '',
-  content: '',
+  description: '',
+  event_date: '',
+  start_time: '',
+  end_time: '',
+  location: '',
   image_url: '',
-  published_at: '',
   status: 'draft',
 }
 
-function AdminNews() {
-  const [news, setNews] = useState<News[]>([])
+function AdminEvents() {
+  const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   const [form, setForm] =
-    useState<NewsForm>(emptyForm)
+    useState<EventForm>(emptyForm)
 
   const [editingId, setEditingId] =
     useState<number | null>(null)
 
-  async function loadNews() {
+  async function loadEvents() {
     setLoading(true)
     setError('')
 
     try {
-      const result =
-        await api.getAdminNews()
+      const result = await api.getAdminEvents()
 
-      setNews(result.news)
+      setEvents(result.events)
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Unable to load news.',
+          : 'Unable to load events.',
       )
     } finally {
       setLoading(false)
@@ -66,11 +81,11 @@ function AdminNews() {
   }
 
   useEffect(() => {
-    void loadNews()
+    void loadEvents()
   }, [])
 
   function updateField(
-    field: keyof NewsForm,
+    field: keyof EventForm,
     value: string,
   ) {
     setForm((current) => ({
@@ -85,22 +100,30 @@ function AdminNews() {
     setError('')
   }
 
-  function editNews(item: News) {
-    setEditingId(item.id ?? null)
+  function editEvent(item: Event) {
+    if (!item.id) {
+      return
+    }
+
+    setEditingId(item.id)
 
     setForm({
       title: item.title,
       slug: item.slug,
-      excerpt: item.excerpt ?? '',
-      content: item.content,
+      description: item.description ?? '',
+      event_date: item.event_date ?? '',
+      start_time:
+        item.start_time?.slice(0, 5) ?? '',
+      end_time:
+        item.end_time?.slice(0, 5) ?? '',
+      location: item.location ?? '',
       image_url: item.image_url ?? '',
-      published_at: item.published_at
-        ? item.published_at.slice(0, 16)
-        : '',
       status:
         item.status === 'published'
           ? 'published'
-          : 'draft',
+          : item.status === 'cancelled'
+            ? 'cancelled'
+            : 'draft',
     })
 
     setMessage('')
@@ -112,6 +135,16 @@ function AdminNews() {
     })
   }
 
+  function generateSlug() {
+    const slug = form.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+
+    updateField('slug', slug)
+  }
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ) {
@@ -121,7 +154,7 @@ function AdminNews() {
     setMessage('')
 
     if (!form.title.trim()) {
-      setError('Title is required.')
+      setError('Event title is required.')
       return
     }
 
@@ -130,60 +163,73 @@ function AdminNews() {
       return
     }
 
-    if (!form.content.trim()) {
-      setError('Content is required.')
+    if (!form.event_date) {
+      setError('Event date is required.')
+      return
+    }
+
+    if (
+      form.start_time &&
+      form.end_time &&
+      form.end_time < form.start_time
+    ) {
+      setError(
+        'End time cannot be earlier than start time.',
+      )
       return
     }
 
     setSaving(true)
 
     try {
-      const payload: CreateNewsPayload = {
+      const payload: CreateEventPayload = {
         title: form.title.trim(),
         slug: form.slug.trim(),
-        excerpt:
-          form.excerpt.trim() || undefined,
-        content: form.content.trim(),
+        description:
+          form.description.trim() || undefined,
+        event_date: form.event_date,
+        start_time:
+          form.start_time || undefined,
+        end_time:
+          form.end_time || undefined,
+        location:
+          form.location.trim() || undefined,
         image_url:
           form.image_url.trim() || undefined,
-        published_at:
-          form.published_at || null,
         status: form.status,
       }
 
       if (editingId !== null) {
-        await api.updateNews(
+        await api.updateEvent(
           editingId,
           payload,
         )
 
         setMessage(
-          'News article updated successfully.',
+          'Event updated successfully.',
         )
       } else {
-        await api.createNews(payload)
+        await api.createEvent(payload)
 
         setMessage(
-          'News article created successfully.',
+          'Event created successfully.',
         )
       }
 
       resetForm()
-      await loadNews()
+      await loadEvents()
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Unable to save news article.',
+          : 'Unable to save event.',
       )
     } finally {
       setSaving(false)
     }
   }
 
-  async function deleteNews(
-    item: News,
-  ) {
+  async function deleteEvent(item: Event) {
     if (!item.id) {
       return
     }
@@ -200,40 +246,76 @@ function AdminNews() {
     setMessage('')
 
     try {
-      await api.deleteNews(item.id)
+      await api.deleteEvent(item.id)
 
       setMessage(
-        'News article deleted successfully.',
+        'Event deleted successfully.',
       )
 
       if (editingId === item.id) {
         resetForm()
       }
 
-      await loadNews()
+      await loadEvents()
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Unable to delete news article.',
+          : 'Unable to delete event.',
       )
     }
   }
 
-  function generateSlug() {
-    const slug = form.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
+  function formatDate(date: string) {
+    if (!date) {
+      return ''
+    }
 
-    updateField('slug', slug)
+    const parsed = new Date(
+      `${date}T00:00:00`,
+    )
+
+    if (Number.isNaN(parsed.getTime())) {
+      return date
+    }
+
+    return parsed.toLocaleDateString(
+      undefined,
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      },
+    )
+  }
+
+  function formatTime(time?: string | null) {
+    if (!time) {
+      return ''
+    }
+
+    const parts = time.split(':')
+    const hours = Number(parts[0])
+    const minutes = parts[1]
+
+    if (
+      Number.isNaN(hours) ||
+      minutes === undefined
+    ) {
+      return time
+    }
+
+    const suffix = hours >= 12 ? 'PM' : 'AM'
+    const displayHour =
+      hours % 12 === 0 ? 12 : hours % 12
+
+    return `${displayHour}:${minutes} ${suffix}`
   }
 
   return (
     <main className="min-h-screen bg-[#fffaf0] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        {/* Admin navigation */}
+        {/* Admin Navigation */}
         <nav className="mb-8 rounded-2xl border border-[#9a3412]/10 bg-white p-3 shadow-sm">
           <div className="flex flex-wrap items-center gap-2">
             <Link
@@ -252,16 +334,17 @@ function AdminNews() {
 
             <Link
               to="/admin/news"
-              className="rounded-xl bg-[#9a3412] px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#fff7ed] hover:text-[#9a3412]"
             >
               News Management
             </Link>
+
             <Link
-  to="/admin/events"
-  className="rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#fff7ed] hover:text-[#9a3412]"
->
-  Event Management
-</Link>
+              to="/admin/events"
+              className="rounded-xl bg-[#9a3412] px-4 py-2 text-sm font-semibold text-white"
+            >
+              Event Management
+            </Link>
 
             <Link
               to="/"
@@ -279,12 +362,12 @@ function AdminNews() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#3f1d1d]">
-            News Management
+            Event Management
           </h1>
 
           <p className="mt-2 text-sm text-[#6b554b]">
-            Create, edit, publish, and delete
-            news articles.
+            Create, edit, publish, cancel, and
+            delete events.
           </p>
         </div>
 
@@ -305,19 +388,19 @@ function AdminNews() {
           </div>
         )}
 
-        {/* Form */}
+        {/* Event Form */}
         <section className="mb-10 rounded-3xl border border-[#9a3412]/10 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold text-[#3f1d1d]">
                 {editingId !== null
-                  ? 'Edit News Article'
-                  : 'Create News Article'}
+                  ? 'Edit Event'
+                  : 'Create Event'}
               </h2>
 
               <p className="mt-1 text-sm text-[#6b554b]">
                 Add the information for your
-                news article.
+                event.
               </p>
             </div>
 
@@ -325,7 +408,8 @@ function AdminNews() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-xl border border-[#9a3412]/20 px-4 py-2 text-sm font-semibold text-[#6b554b] hover:bg-[#fff7ed]"
+                disabled={saving}
+                className="rounded-xl border border-[#9a3412]/20 px-4 py-2 text-sm font-semibold text-[#6b554b] hover:bg-[#fff7ed] disabled:opacity-50"
               >
                 Cancel Edit
               </button>
@@ -336,17 +420,18 @@ function AdminNews() {
             onSubmit={handleSubmit}
             className="space-y-5"
           >
+            {/* Title / Slug */}
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label
-                  htmlFor="news-title"
+                  htmlFor="event-title"
                   className="block text-sm font-semibold text-[#3f1d1d]"
                 >
-                  Title
+                  Event Title
                 </label>
 
                 <input
-                  id="news-title"
+                  id="event-title"
                   value={form.title}
                   onChange={(event) =>
                     updateField(
@@ -354,7 +439,7 @@ function AdminNews() {
                       event.target.value,
                     )
                   }
-                  placeholder="News article title"
+                  placeholder="Ganesh Chaturthi Celebration"
                   disabled={saving}
                   className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
                 />
@@ -362,7 +447,7 @@ function AdminNews() {
 
               <div>
                 <label
-                  htmlFor="news-slug"
+                  htmlFor="event-slug"
                   className="block text-sm font-semibold text-[#3f1d1d]"
                 >
                   Slug
@@ -370,7 +455,7 @@ function AdminNews() {
 
                 <div className="mt-2 flex gap-2">
                   <input
-                    id="news-slug"
+                    id="event-slug"
                     value={form.slug}
                     onChange={(event) =>
                       updateField(
@@ -378,7 +463,7 @@ function AdminNews() {
                         event.target.value,
                       )
                     }
-                    placeholder="news-article-slug"
+                    placeholder="ganesh-chaturthi-celebration"
                     disabled={saving}
                     className="min-h-11 min-w-0 flex-1 rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
                   />
@@ -395,65 +480,138 @@ function AdminNews() {
               </div>
             </div>
 
+            {/* Description */}
             <div>
               <label
-                htmlFor="news-excerpt"
+                htmlFor="event-description"
                 className="block text-sm font-semibold text-[#3f1d1d]"
               >
-                Excerpt
+                Description
               </label>
 
               <textarea
-                id="news-excerpt"
-                value={form.excerpt}
+                id="event-description"
+                value={form.description}
                 onChange={(event) =>
                   updateField(
-                    'excerpt',
+                    'description',
                     event.target.value,
                   )
                 }
-                rows={3}
-                placeholder="Short summary of the article"
+                rows={6}
+                placeholder="Describe the event..."
                 disabled={saving}
                 className="mt-2 w-full rounded-xl border border-[#9a3412]/20 px-4 py-3 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="news-content"
-                className="block text-sm font-semibold text-[#3f1d1d]"
-              >
-                Content
-              </label>
+            {/* Date / Times */}
+            <div className="grid gap-5 md:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="event-date"
+                  className="block text-sm font-semibold text-[#3f1d1d]"
+                >
+                  Event Date
+                </label>
 
-              <textarea
-                id="news-content"
-                value={form.content}
-                onChange={(event) =>
-                  updateField(
-                    'content',
-                    event.target.value,
-                  )
-                }
-                rows={10}
-                placeholder="Write the full news article..."
-                disabled={saving}
-                className="mt-2 w-full rounded-xl border border-[#9a3412]/20 px-4 py-3 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-              />
+                <input
+                  id="event-date"
+                  type="date"
+                  value={form.event_date}
+                  onChange={(event) =>
+                    updateField(
+                      'event_date',
+                      event.target.value,
+                    )
+                  }
+                  disabled={saving}
+                  className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="event-start-time"
+                  className="block text-sm font-semibold text-[#3f1d1d]"
+                >
+                  Start Time
+                </label>
+
+                <input
+                  id="event-start-time"
+                  type="time"
+                  value={form.start_time}
+                  onChange={(event) =>
+                    updateField(
+                      'start_time',
+                      event.target.value,
+                    )
+                  }
+                  disabled={saving}
+                  className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="event-end-time"
+                  className="block text-sm font-semibold text-[#3f1d1d]"
+                >
+                  End Time
+                </label>
+
+                <input
+                  id="event-end-time"
+                  type="time"
+                  value={form.end_time}
+                  onChange={(event) =>
+                    updateField(
+                      'end_time',
+                      event.target.value,
+                    )
+                  }
+                  disabled={saving}
+                  className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                />
+              </div>
             </div>
 
+            {/* Location / Image */}
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label
-                  htmlFor="news-image"
+                  htmlFor="event-location"
+                  className="block text-sm font-semibold text-[#3f1d1d]"
+                >
+                  Location
+                </label>
+
+                <input
+                  id="event-location"
+                  value={form.location}
+                  onChange={(event) =>
+                    updateField(
+                      'location',
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Om Ganesh Sanskrutik Mandal"
+                  disabled={saving}
+                  className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="event-image"
                   className="block text-sm font-semibold text-[#3f1d1d]"
                 >
                   Image URL
                 </label>
 
                 <input
-                  id="news-image"
+                  id="event-image"
                   type="url"
                   value={form.image_url}
                   onChange={(event) =>
@@ -467,41 +625,19 @@ function AdminNews() {
                   className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
                 />
               </div>
-
-              <div>
-                <label
-                  htmlFor="news-published-at"
-                  className="block text-sm font-semibold text-[#3f1d1d]"
-                >
-                  Published At
-                </label>
-
-                <input
-                  id="news-published-at"
-                  type="datetime-local"
-                  value={form.published_at}
-                  onChange={(event) =>
-                    updateField(
-                      'published_at',
-                      event.target.value,
-                    )
-                  }
-                  disabled={saving}
-                  className="mt-2 min-h-11 w-full rounded-xl border border-[#9a3412]/20 px-4 text-sm outline-none focus:border-[#9a3412] focus:ring-2 focus:ring-[#9a3412]/10"
-                />
-              </div>
             </div>
 
+            {/* Status */}
             <div>
               <label
-                htmlFor="news-status"
+                htmlFor="event-status"
                 className="block text-sm font-semibold text-[#3f1d1d]"
               >
                 Status
               </label>
 
               <select
-                id="news-status"
+                id="event-status"
                 value={form.status}
                 onChange={(event) =>
                   updateField(
@@ -519,9 +655,14 @@ function AdminNews() {
                 <option value="published">
                   Published
                 </option>
+
+                <option value="cancelled">
+                  Cancelled
+                </option>
               </select>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={saving}
@@ -530,48 +671,47 @@ function AdminNews() {
               {saving
                 ? 'Saving...'
                 : editingId !== null
-                  ? 'Update News'
-                  : 'Create News'}
+                  ? 'Update Event'
+                  : 'Create Event'}
             </button>
           </form>
         </section>
 
-        {/* Existing news */}
+        {/* Existing Events */}
         <section className="rounded-3xl border border-[#9a3412]/10 bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-[#3f1d1d]">
-              Existing News
+              Existing Events
             </h2>
 
             <p className="mt-1 text-sm text-[#6b554b]">
-              Manage all news articles, including
-              drafts.
+              Manage all events, including drafts
+              and cancelled events.
             </p>
           </div>
 
           {loading ? (
             <p className="text-sm text-[#6b554b]">
-              Loading news...
+              Loading events...
             </p>
-          ) : news.length === 0 ? (
+          ) : events.length === 0 ? (
             <div className="rounded-2xl bg-[#fffaf0] p-6 text-center">
               <p className="font-semibold text-[#3f1d1d]">
-                No news articles yet.
+                No events yet.
               </p>
 
               <p className="mt-1 text-sm text-[#6b554b]">
-                Create your first news article
-                above.
+                Create your first event above.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {news.map((item) => (
+              {events.map((item) => (
                 <article
                   key={item.id}
                   className="rounded-2xl border border-[#9a3412]/10 p-5"
                 >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-bold text-[#3f1d1d]">
@@ -583,7 +723,10 @@ function AdminNews() {
                             item.status ===
                             'published'
                               ? 'bg-green-100 text-green-700'
-                              : 'bg-amber-100 text-amber-700'
+                              : item.status ===
+                                  'cancelled'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-amber-100 text-amber-700'
                           }`}
                         >
                           {item.status ||
@@ -592,25 +735,60 @@ function AdminNews() {
                       </div>
 
                       <p className="mt-1 text-xs text-[#9a3412]">
-                        /news/{item.slug}
+                        /events/{item.slug}
                       </p>
 
-                      {item.excerpt && (
-                        <p className="mt-3 text-sm leading-6 text-[#6b554b]">
-                          {item.excerpt}
+                      <div className="mt-4 grid gap-2 text-sm text-[#6b554b] sm:grid-cols-2">
+                        <p>
+                          <span className="font-semibold text-[#3f1d1d]">
+                            Date:
+                          </span>{' '}
+                          {formatDate(
+                            item.event_date,
+                          )}
+                        </p>
+
+                        {(item.start_time ||
+                          item.end_time) && (
+                          <p>
+                            <span className="font-semibold text-[#3f1d1d]">
+                              Time:
+                            </span>{' '}
+                            {formatTime(
+                              item.start_time,
+                            )}
+                            {item.start_time &&
+                            item.end_time
+                              ? ' - '
+                              : ''}
+                            {formatTime(
+                              item.end_time,
+                            )}
+                          </p>
+                        )}
+
+                        {item.location && (
+                          <p className="sm:col-span-2">
+                            <span className="font-semibold text-[#3f1d1d]">
+                              Location:
+                            </span>{' '}
+                            {item.location}
+                          </p>
+                        )}
+                      </div>
+
+                      {item.description && (
+                        <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm leading-6 text-[#6b554b]">
+                          {item.description}
                         </p>
                       )}
-
-                      <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm leading-6 text-[#6b554b]">
-                        {item.content}
-                      </p>
                     </div>
 
                     <div className="flex shrink-0 gap-2">
                       <button
                         type="button"
                         onClick={() =>
-                          editNews(item)
+                          editEvent(item)
                         }
                         className="rounded-xl border border-[#9a3412]/20 px-4 py-2 text-sm font-semibold text-[#9a3412] hover:bg-[#fff7ed]"
                       >
@@ -620,7 +798,7 @@ function AdminNews() {
                       <button
                         type="button"
                         onClick={() =>
-                          void deleteNews(item)
+                          void deleteEvent(item)
                         }
                         className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
                       >
@@ -638,4 +816,4 @@ function AdminNews() {
   )
 }
 
-export default AdminNews
+export default AdminEvents

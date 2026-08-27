@@ -329,6 +329,12 @@ function AdminTeam() {
     >
       News Management
     </Link>
+    <Link
+  to="/admin/events"
+  className="rounded-xl px-4 py-2 text-sm font-semibold text-[#6b554b] transition hover:bg-[#fff7ed] hover:text-[#9a3412]"
+>
+  Event Management
+</Link>
 
     <Link
       to="/"
