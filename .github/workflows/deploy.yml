@@ -38,6 +38,9 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: Add SPA fallback for React Router
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
